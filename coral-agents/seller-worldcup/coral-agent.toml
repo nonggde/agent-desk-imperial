@@ -19,6 +19,7 @@ FLOOR_SOL = { type = "f64", default = 0.0005, description = "Cost floor — the 
 PERSONA = { type = "string", default = "a World Cup trading specialist who sells verified TxODDS odds and a sharp one-line value call", description = "Bidding persona (LLM system prompt)" }
 SERVICE = { type = "string", default = "txline", description = "What deliverService returns: txline (fixtures | odds <id> | edge <id>)" }
 SOLANA_RPC_URL = { type = "string", default = "", description = "Solana RPC URL (devnet)" }
+SETTLEMENT_MODE = { type = "string", default = "arbiter", description = "arbiter (default) | direct legacy base escrow" }
 ESCROW_DEADLINE_SECS = { type = "f64", default = 600, description = "Refund deadline for escrow deposits (seconds)" }
 TXLINE_API_KEY = { type = "string", default = "", description = "Activated TxLINE API token (from the one-time devnet subscribe — see examples/txodds)" }
 TXLINE_BASE_URL = { type = "string", default = "", description = "Override the TxLINE host (defaults to txline-dev.txodds.com)" }

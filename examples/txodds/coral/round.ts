@@ -36,8 +36,8 @@ function loadEnv(): Record<string, string> {
 
 const str = (value: string) => ({ type: 'string', value })
 const f64 = (value: number) => ({ type: 'f64', value })
-const agent = (name: string, options: Record<string, unknown>) => ({
-  id: { name, version: '0.1.0', registrySourceId: { type: 'local' } },
+const agent = (name: string, options: Record<string, unknown>, idName = name) => ({
+  id: { name: idName, version: '0.1.0', registrySourceId: { type: 'local' } },
   name,
   provider: { type: 'local', runtime: 'docker' },
   options,
@@ -56,6 +56,8 @@ async function main(): Promise<void> {
   const env = loadEnv()
   const wallet = env.WALLET
   const keypair = env.BUYER_KEYPAIR_B58
+  const arbiter = env.ARBITER_KEYPAIR_B58
+  if (!arbiter) throw new Error('ARBITER_KEYPAIR_B58 must be in .env - run `node scripts/setup.js`')
   if (!wallet || !keypair) throw new Error('WALLET + BUYER_KEYPAIR_B58 must be in .env — run `node scripts/setup.js`')
   if (!env.TXLINE_API_KEY) throw new Error('TXLINE_API_KEY missing — run `npm run mint` (examples/txodds) first')
   const rpc = env.SOLANA_RPC_URL ?? 'https://api.devnet.solana.com'
@@ -69,24 +71,40 @@ async function main(): Promise<void> {
 
   const fixtureId = await liveFixtureId()
 
-  const seller = agent('seller-worldcup', {
-    SELLER_WALLET: str(wallet), SOLANA_RPC_URL: str(rpc), AGENT_NAME: str('seller-worldcup'),
-    SERVICES: str('txline'), FLOOR_SOL: f64(Number(env.WORLDCUP_FLOOR_SOL ?? '0.0005')),
-    TXLINE_API_KEY: str(env.TXLINE_API_KEY),
+  const sellerOpts = (name: string, floor: string, persona: string) => ({
+    SELLER_WALLET: str(wallet), SOLANA_RPC_URL: str(rpc), AGENT_NAME: str(name),
+    SERVICES: str('txline'), FLOOR_SOL: f64(Number(floor)), PERSONA: str(persona),
+    SETTLEMENT_MODE: str('arbiter'), TXLINE_API_KEY: str(env.TXLINE_API_KEY),
     ...(env.TXLINE_BASE_URL ? { TXLINE_BASE_URL: str(env.TXLINE_BASE_URL) } : {}),
     ...llm,
   })
+  const specialist = agent('seller-worldcup', sellerOpts(
+    'seller-worldcup',
+    env.WORLDCUP_FLOOR_SOL ?? '0.00045',
+    'a World Cup TxODDS specialist with fresh fair-line reads',
+  ))
+  const fast = agent('seller-fast', sellerOpts(
+    'seller-fast',
+    env.FAST_SELLER_FLOOR_SOL ?? '0.00065',
+    'a fast generalist who can serve TxODDS but is less specialized',
+  ), 'seller-worldcup')
+  const premium = agent('seller-premium', sellerOpts(
+    'seller-premium',
+    env.PREMIUM_SELLER_FLOOR_SOL ?? '0.00085',
+    'a cautious premium analyst who charges more for commentary',
+  ), 'seller-worldcup')
   const buyer = agent('buyer-agent', {
     BUYER_KEYPAIR_B58: str(keypair), AGENT_NAME: str('buyer-agent'), SOLANA_RPC_URL: str(rpc),
+    ARBITER_KEYPAIR_B58: str(arbiter), SETTLEMENT_MODE: str('arbiter'),
     SELLER_WALLET: str(wallet), BUYER_MAX_SOL: f64(Number(env.BUYER_MAX_SOL ?? '0.001')),
     BUYER_SERVICE: str('txline'), BUYER_ARG: str(`edge ${fixtureId}`),
-    MARKET_SELLERS: str('seller-worldcup'), ...llm,
+    MARKET_SELLERS: str('seller-worldcup,seller-fast,seller-premium'), ...llm,
   })
 
   const res = await fetch(`${BASE}/api/v1/local/session`, {
     method: 'POST', headers: AUTH,
     body: JSON.stringify({
-      agentGraphRequest: { agents: [buyer, seller] },
+      agentGraphRequest: { agents: [buyer, specialist, fast, premium] },
       namespaceProvider: { type: 'create_if_not_exists', namespaceRequest: { name: NS } },
       execution: { mode: 'immediate' },
     }),

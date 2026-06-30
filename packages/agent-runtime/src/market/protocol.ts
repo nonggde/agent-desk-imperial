@@ -33,6 +33,8 @@ export interface EscrowTerms {
   seller: string
   amountSol: number
   deadlineSecs: number
+  /** Settlement rail requested by the seller. `arbiter` is the CoralOS default; `direct` is legacy. */
+  settlement?: 'direct' | 'arbiter'
 }
 
 export interface Deposited {
@@ -41,6 +43,10 @@ export interface Deposited {
   /** The buyer's wallet (base58) — the seller derives the escrow PDA from (buyer, reference). */
   buyer: string
   sig: string
+  /** Arbiter vault PDA, present when settlement='arbiter'. This is the escrow account's buyer. */
+  vault?: string
+  settlement?: 'direct' | 'arbiter'
+  arbiter?: string
 }
 
 const num = (text: string, key: string): number | undefined => {
@@ -107,7 +113,8 @@ export function parseAward(text: string): { round: number; to: string; reason?: 
 
 // ── ESCROW_REQUIRED ─────────────────────────────────────────────────────────────
 export function formatEscrowRequired(t: EscrowTerms): string {
-  return `ESCROW_REQUIRED round=${t.round} reference=${t.reference} seller=${t.seller} amount=${t.amountSol} deadline=${t.deadlineSecs}`
+  const base = `ESCROW_REQUIRED round=${t.round} reference=${t.reference} seller=${t.seller} amount=${t.amountSol} deadline=${t.deadlineSecs}`
+  return t.settlement ? `${base} settlement=${t.settlement}` : base
 }
 export function parseEscrowRequired(text: string): EscrowTerms | null {
   if (verb(text) !== 'ESCROW_REQUIRED') return null
@@ -117,12 +124,20 @@ export function parseEscrowRequired(text: string): EscrowTerms | null {
   const amountSol = num(text, 'amount')
   const deadlineSecs = num(text, 'deadline')
   if (round == null || !reference || !seller || amountSol == null || deadlineSecs == null) return null
-  return { round, reference, seller, amountSol, deadlineSecs }
+  const settlement = tok(text, 'settlement')
+  return {
+    round, reference, seller, amountSol, deadlineSecs,
+    ...(settlement === 'direct' || settlement === 'arbiter' ? { settlement } : {}),
+  }
 }
 
 // ── DEPOSITED ───────────────────────────────────────────────────────────────────
 export function formatDeposited(d: Deposited): string {
-  return `DEPOSITED round=${d.round} reference=${d.reference} buyer=${d.buyer} sig=${d.sig}`
+  const parts = [`DEPOSITED round=${d.round}`, `reference=${d.reference}`, `buyer=${d.buyer}`, `sig=${d.sig}`]
+  if (d.settlement) parts.push(`settlement=${d.settlement}`)
+  if (d.vault) parts.push(`vault=${d.vault}`)
+  if (d.arbiter) parts.push(`arbiter=${d.arbiter}`)
+  return parts.join(' ')
 }
 export function parseDeposited(text: string): Deposited | null {
   if (verb(text) !== 'DEPOSITED') return null
@@ -131,7 +146,15 @@ export function parseDeposited(text: string): Deposited | null {
   const buyer = tok(text, 'buyer')
   const sig = tok(text, 'sig')
   if (round == null || !reference || !buyer || !sig) return null
-  return { round, reference, buyer, sig }
+  const settlement = tok(text, 'settlement')
+  const vault = tok(text, 'vault')
+  const arbiter = tok(text, 'arbiter')
+  return {
+    round, reference, buyer, sig,
+    ...(settlement === 'direct' || settlement === 'arbiter' ? { settlement } : {}),
+    ...(vault ? { vault } : {}),
+    ...(arbiter ? { arbiter } : {}),
+  }
 }
 
 // ── selection ───────────────────────────────────────────────────────────────────

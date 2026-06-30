@@ -27,9 +27,9 @@ export interface BidDecision {
 export function sellerConfigFromEnv(name: string): SellerConfig {
   return {
     name,
-    services: (process.env.SERVICES ?? 'jupiter,coingecko').split(',').map((s) => s.trim()).filter(Boolean),
+    services: (process.env.SERVICES ?? 'txline').split(',').map((s) => s.trim()).filter(Boolean),
     floorSol: Number(process.env.FLOOR_SOL ?? '0.0003'),
-    persona: process.env.PERSONA ?? 'a fair, no-nonsense data seller',
+    persona: process.env.PERSONA ?? 'a TxODDS specialist selling verified fair-line reads',
   }
 }
 

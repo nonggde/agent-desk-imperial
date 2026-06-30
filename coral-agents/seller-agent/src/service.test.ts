@@ -1,51 +1,62 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { deliverService } from './service.js'
 
-// deliverService routes on the FIRST token of the request when it names a known service, else falls
-// back to the SERVICE env. External APIs are mocked so these are fast, offline unit tests.
-describe('deliverService routing', () => {
+describe('deliverService txline-only routing', () => {
   const realFetch = global.fetch
+
   beforeEach(() => {
+    process.env.TXLINE_API_KEY = 'token'
     delete process.env.ANTHROPIC_API_KEY
-    delete process.env.NEWS_API_KEY
-    delete process.env.SERVICE
+    delete process.env.OPENAI_API_KEY
+    delete process.env.LLM_PROVIDER
   })
+
   afterEach(() => {
     global.fetch = realFetch
     vi.restoreAllMocks()
   })
 
-  const mockJson = (body: unknown) =>
-    (global.fetch = vi.fn(async () => ({ ok: true, json: async () => body })) as unknown as typeof fetch)
-
-  it('routes on the first token, overriding the SERVICE env', async () => {
-    process.env.SERVICE = 'jupiter' // env says jupiter…
-    mockJson({ solana: { usd: 152.5 } })
-    const out = JSON.parse(await deliverService('coingecko')) // …but the request asks for coingecko
-    expect(out.coin).toBe('solana')
-    expect(out.usd).toBe(152.5)
+  it('rejects legacy generic services', async () => {
+    const out = JSON.parse(await deliverService('coingecko eth'))
+    expect(out).toEqual({ error: 'unsupported service', service: 'coingecko', supported: ['txline'] })
   })
 
-  it('coingecko picks ethereum when the request mentions eth', async () => {
-    mockJson({ ethereum: { usd: 3000 } })
-    const out = JSON.parse(await deliverService('coingecko eth price'))
-    expect(out.coin).toBe('ethereum')
+  it('returns fixtures from TxLINE', async () => {
+    global.fetch = vi.fn(async (url: string) => {
+      if (url.endsWith('/auth/guest/start')) return { ok: true, json: async () => ({ token: 'jwt' }) }
+      return { ok: true, json: async () => ([{ FixtureId: 1 }, { FixtureId: 2 }]) }
+    }) as unknown as typeof fetch
+
+    const out = JSON.parse(await deliverService('txline fixtures'))
+    expect(out).toMatchObject({ service: 'txline-fixtures', count: 2 })
   })
 
-  it('inference without ANTHROPIC_API_KEY returns a clear error (never crashes)', async () => {
-    const out = JSON.parse(await deliverService('inference write a haiku'))
-    expect(out.error).toMatch(/ANTHROPIC_API_KEY/)
-  })
+  it('produces a deterministic edge when no live LLM key is configured', async () => {
+    global.fetch = vi.fn(async (url: string) => {
+      if (url.endsWith('/auth/guest/start')) return { ok: true, json: async () => ({ token: 'jwt' }) }
+      if (url.includes('/api/odds/snapshot/123')) {
+        return {
+          ok: true,
+          json: async () => ([{
+            SuperOddsType: '1X2',
+            PriceNames: ['part1', 'x', 'part2'],
+            Pct: ['62', '22', '16'],
+          }]),
+        }
+      }
+      return {
+        ok: true,
+        json: async () => ([{
+          FixtureId: 123,
+          Participant1: 'A',
+          Participant2: 'B',
+          Competition: 'World Cup',
+        }]),
+      }
+    }) as unknown as typeof fetch
 
-  it('news without NEWS_API_KEY returns a clear error', async () => {
-    const out = JSON.parse(await deliverService('news solana'))
-    expect(out.error).toMatch(/NEWS_API_KEY/)
-  })
-
-  it('falls back to the SERVICE env when the first token is not a known service', async () => {
-    process.env.SERVICE = 'coingecko'
-    mockJson({ solana: { usd: 100 } })
-    const out = JSON.parse(await deliverService('what is the price right now'))
-    expect(out.coin).toBe('solana') // used env=coingecko, not the words in the request
+    const out = JSON.parse(await deliverService('txline edge 123'))
+    expect(out.analysis.call).toContain('A')
+    expect(out.analysis.note).toContain('deterministic fallback')
   })
 })

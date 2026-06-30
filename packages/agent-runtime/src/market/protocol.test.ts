@@ -38,11 +38,11 @@ describe('AWARD + ESCROW_REQUIRED round-trip', () => {
     expect(parseAward(msg)).toEqual({ round: 9, to: 'seller-cheap', reason: 'best value' })
   })
   it('ESCROW_REQUIRED', () => {
-    const t = { round: 9, reference: 'R3f', seller: 'SeLLeRwa11et', amountSol: 0.0006, deadlineSecs: 600 }
+    const t = { round: 9, reference: 'R3f', seller: 'SeLLeRwa11et', amountSol: 0.0006, deadlineSecs: 600, settlement: 'arbiter' as const }
     expect(parseEscrowRequired(formatEscrowRequired(t))).toEqual(t)
   })
   it('DEPOSITED', () => {
-    const d = { round: 9, reference: 'R3f', buyer: 'BuYeRwa11et', sig: '5h2abc' }
+    const d = { round: 9, reference: 'R3f', buyer: 'BuYeRwa11et', sig: '5h2abc', settlement: 'arbiter' as const, vault: 'VaU1t', arbiter: 'ArB1t3r' }
     expect(parseDeposited(formatDeposited(d))).toEqual(d)
   })
 })

@@ -1,27 +1,24 @@
 # coral-agents
 
-The agents CoralOS launches as Docker containers for the **CoralOS round** (see
-[`examples/txodds/coral/`](../examples/txodds/coral)). Each connects to a session over MCP (via
-`startCoralAgent` in `packages/agent-runtime`) and transacts in a shared market thread.
+Dockerized agents for the CoralOS round in [`examples/txodds/coral/`](../examples/txodds/coral).
+Each agent connects to a CoralOS MCP session through `startCoralAgent` and trades in a shared market
+thread.
 
 | Agent | Role |
-|-------|------|
-| `buyer-agent` | Market buyer — broadcasts a `WANT`, collects bids, awards best value, settles via escrow (deposit → release/refund). |
-| `seller-agent` | LLM seller — decides whether/how to bid (`bidder.ts`, code-enforced floor/budget/inventory), then delivers (`service.ts` `deliverService` — **the fork point**) against a funded escrow. |
-| `seller-worldcup` | Config-only **persona** — the same `seller-agent:0.1.0` image with `SERVICES=txline` + a `TXLINE_API_KEY`, so it sells the verified World Cup edge. No code, no extra build. |
+|---|---|
+| `buyer-agent` | Broadcasts `WANT`, collects competing bids, awards best value, opens arbiter escrow, and triggers arbiter release on delivery. |
+| `seller-agent` | TxODDS fulfillment image: bids on `txline`, verifies the funded escrow, and delivers the read. |
+| `seller-worldcup` | Config persona reusing `seller-agent:0.1.0`; the launcher instantiates it three times as specialist/generalist/premium sellers. |
 
-All build on the runtime in `packages/agent-runtime` (CoralOS client, Solana Pay, the LLM shim, the
-market protocol). Settlement is the Anchor escrow in [`examples/txodds/escrow/`](../examples/txodds/escrow).
+Settlement for the TxODDS round is arbiter-gated by default: the buyer funds a vault PDA, the seller
+verifies that vault-backed escrow, and the neutral arbiter key releases payment after delivery.
 
-## Build the images
-
-The demo ships against pre-built images; only rebuild if you change the agents:
+## Build
 
 ```sh
-bash build-agents.sh           # from the repo root — seller-agent:0.1.0 + buyer-agent:0.1.0
+bash build-agents.sh
 ```
 
-CoralOS discovers each agent from its `coral-agent.toml`. The round launcher
-([`examples/txodds/coral/round.ts`](../examples/txodds/coral/round.ts), `npm run coral`) creates a
-session naming the buyer + the `seller-worldcup` persona; CoralOS launches the containers and injects
-each one's `CORAL_CONNECTION_URL`. Add the generic personas back to show competition.
+The round launcher creates one buyer and three seller instances. `seller-fast` and `seller-premium`
+reuse the local `seller-worldcup` package id but run with different `AGENT_NAME`, `PERSONA`, and
+`FLOOR_SOL` options.

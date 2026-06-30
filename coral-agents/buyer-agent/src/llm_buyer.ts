@@ -1,8 +1,8 @@
 /**
- * LLMBuyerStrategy — the agent-economy primitive.
+ * LLMBuyerStrategy - the agent-economy primitive.
  *
  * Claude, given a goal, fetches a paid endpoint, discovers it needs payment (HTTP 402),
- * decides whether the price is worth it, signs a Solana transfer, and retries — all as
+ * decides whether the price is worth it, signs a Solana transfer, and retries - all as
  * autonomous tool use. This is the difference between "a script that pays" and "an agent
  * that decides to pay."
  *
@@ -10,9 +10,9 @@
  * the LLM dependency out of `agent-runtime` keeps the core runtime lightweight.
  *
  * Three safety properties that make this production-shaped rather than a toy:
- *   1. The tool-use loop is BOUNDED (maxTurns) — an agent that can loop forever is a liability.
- *   2. The budget is enforced in CODE, not the prompt — the model can want to overpay; we refuse.
- *   3. The model can only pay values from a REAL challenge — no hallucinated recipients/amounts.
+ *   1. The tool-use loop is BOUNDED (maxTurns) - an agent that can loop forever is a liability.
+ *   2. The budget is enforced in CODE, not the prompt - the model can want to overpay; we refuse.
+ *   3. The model can only pay values from a REAL challenge - no hallucinated recipients/amounts.
  */
 import Anthropic from '@anthropic-ai/sdk'
 import { signTransfer } from './wallet.js'
@@ -35,7 +35,7 @@ export interface LLMBuyerConfig {
   endpoint: string
   /** System goal: what the buyer wants and why. */
   goal: string
-  /** Hard cap in lamports. Enforced in code — the model cannot exceed it. */
+  /** Hard cap in lamports. Enforced in code - the model cannot exceed it. */
   budgetLamports: number
   /** Anthropic model. Defaults to Claude Haiku for cost. */
   model?: string
@@ -46,12 +46,12 @@ export interface LLMBuyerConfig {
 const BUYER_SYSTEM = `You are an autonomous data-buying agent on Solana devnet.
 Use fetch_data to get the resource. If it returns a 402 payment challenge, evaluate whether the
 price is reasonable for your goal, then call pay_and_retry with the challenge's recipient, amount,
-and reference EXACTLY as given. Never invent a recipient, amount, or reference — only use values
+and reference EXACTLY as given. Never invent a recipient, amount, or reference - only use values
 from a real challenge. When you have the data, summarize it in one sentence and stop.`
 
 /**
  * Parse a 402 response's `x-payment-required` header (or JSON body) into a challenge.
- * (Legacy pay-per-call helper — the CoralOS round settles via escrow, not 402.)
+ * (Legacy pay-per-call helper - the CoralOS round settles via escrow, not 402.)
  */
 export function parse402(headers: Headers, body?: string): PaymentChallenge | null {
   const header = headers.get('x-payment-required')
@@ -125,7 +125,7 @@ export class LLMBuyerStrategy {
 
       const toolUses = resp.content.filter((c): c is Anthropic.ToolUseBlock => c.type === 'tool_use')
       if (toolUses.length === 0) {
-        // No tool calls → the model produced a final answer.
+        // No tool calls -> the model produced a final answer.
         return resp.content
           .filter((c): c is Anthropic.TextBlock => c.type === 'text')
           .map((c) => c.text)

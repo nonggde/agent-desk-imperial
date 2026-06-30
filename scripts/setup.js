@@ -27,13 +27,13 @@ const getKv = (text, key) => text.match(new RegExp(`^${key}=(\\S+)`, 'm'))?.[1]
 // Base on an existing .env (preserve user-added keys like ANTHROPIC_API_KEY); else the template.
 let env = existsSync(envPath) ? readFileSync(envPath, 'utf8') : readFileSync(examplePath, 'utf8')
 
-// Generate only what's missing — re-running never rotates a key you've already funded.
+// Generate only what's missing - re-running never rotates a key you've already funded.
 // The BUYER signs the escrow (deposit/release/refund) and must be funded. The SELLER is a real, distinct
 // keypair too (not just a receive address) so the settlement is a genuine two-party transfer the seller
-// could later spend or prove — it only RECEIVES on release, so it needs no funding.
+// could later spend or prove - it only RECEIVES on release, so it needs no funding.
 let buyerB58 = getKv(env, 'BUYER_KEYPAIR_B58') || bs58.encode(Keypair.generate().secretKey)
 let sellerB58 = getKv(env, 'SELLER_KEYPAIR_B58') || bs58.encode(Keypair.generate().secretKey)
-// the neutral arbiter that gates release/refund (the trustless wrapper). Needs only tx-fee funds —
+// the neutral arbiter that gates release/refund (the trustless wrapper). Needs only tx-fee funds -
 // the proxy tops it up from the buyer automatically, so it's generated here but never needs the faucet.
 let arbiterB58 = getKv(env, 'ARBITER_KEYPAIR_B58') || bs58.encode(Keypair.generate().secretKey)
 const buyerPubkey = Keypair.fromSecretKey(bs58.decode(buyerB58)).publicKey.toBase58()
@@ -43,21 +43,21 @@ const arbiterPubkey = Keypair.fromSecretKey(bs58.decode(arbiterB58)).publicKey.t
 env = setKv(env, 'BUYER_KEYPAIR_B58', buyerB58)
 env = setKv(env, 'SELLER_KEYPAIR_B58', sellerB58)
 env = setKv(env, 'ARBITER_KEYPAIR_B58', arbiterB58)
-env = setKv(env, 'WALLET', sellerPubkey) // the seller's public key — the escrow payout destination
+env = setKv(env, 'WALLET', sellerPubkey) // the seller's public key - the escrow payout destination
 env = setKv(env, 'SOLANA_RPC_URL', getKv(env, 'SOLANA_RPC_URL') || 'https://api.devnet.solana.com')
 
 writeFileSync(envPath, env)
 
-// ── report ──
+// -- report --
 const block = [
-  'World Cup Oracle — devnet wallets',
+  'World Cup Oracle - devnet wallets',
   `Generated: ${new Date().toISOString()}`,
   '',
-  `  Buyer   wallet  ${buyerPubkey}   ← signs + funds the escrow (FUND THIS)`,
-  `  Seller  wallet  ${sellerPubkey}   ← receives on release (no funding needed)`,
-  `  Arbiter wallet  ${arbiterPubkey}   ← gates release/refund; the proxy tops up its fees (no funding needed)`,
+  `  Buyer   wallet  ${buyerPubkey}   <- signs + funds the escrow (FUND THIS)`,
+  `  Seller  wallet  ${sellerPubkey}   <- receives on release (no funding needed)`,
+  `  Arbiter wallet  ${arbiterPubkey}   <- gates release/refund; the proxy tops up its fees (no funding needed)`,
   '',
-  'FUND THE BUYER with devnet SOL — the only way is the web faucet',
+  'FUND THE BUYER with devnet SOL - the only way is the web faucet',
   '(sign in with GitHub; CLI/RPC airdrops are gated):',
   '',
   '  https://faucet.solana.com',
@@ -65,9 +65,9 @@ const block = [
 ].join('\n')
 writeFileSync(walletsPath, block)
 console.log('\n' + block)
-console.log('(saved to WALLETS.txt · keys written to .env)')
+console.log('(saved to WALLETS.txt - keys written to .env)')
 console.log(`
-Next: add your LLM key to .env (ANTHROPIC_API_KEY=…, or LLM_PROVIDER=openai + OPENAI_API_KEY),
+Next: add your LLM key to .env (ANTHROPIC_API_KEY=..., or LLM_PROVIDER=openai + OPENAI_API_KEY),
 fund the BUYER wallet above, then run the demo:
 
   npm run dev          # starts the proxy (live data + escrow) + the Oracle UI, opens the browser

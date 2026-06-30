@@ -10,7 +10,7 @@ const fresh = (): PurchaseGuard => ({
   spentLamports: 0,
 })
 
-describe('guardPayment — code-enforced trust (not prompt-enforced)', () => {
+describe('guardPayment - code-enforced trust (not prompt-enforced)', () => {
   it('refuses a recipient that never appeared in a challenge (prompt-injection defense, H2)', () => {
     const r = guardPayment(fresh(), { recipient: 'AttackerWa11et', amountSol: 0.0001 }, 1e9)
     expect(r.allowed).toBe(false)
@@ -40,7 +40,7 @@ describe('guardPayment — code-enforced trust (not prompt-enforced)', () => {
   })
 })
 
-describe('payoutMatches — bind the awarded seller to the escrow payout (F3)', () => {
+describe('payoutMatches - bind the awarded seller to the escrow payout (F3)', () => {
   it('rejects an escrow seller that differs from the expected wallet', () => {
     expect(payoutMatches('AttackerWa11et', RECIP)).toBe(false)
   })
@@ -67,7 +67,7 @@ describe('parse402', () => {
   })
 })
 
-describe('payFromUrl — budget enforcement (before any signing)', () => {
+describe('payFromUrl - budget enforcement (before any signing)', () => {
   it('throws when the amount exceeds the budget', async () => {
     await expect(payFromUrl(`solana:${RECIP}?amount=1&reference=R`, 0.001)).rejects.toThrow(/budget/i)
   })

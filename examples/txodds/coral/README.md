@@ -56,8 +56,8 @@ Set `TRACE=1` in `.env` for Coral calls, PDA addresses, and Explorer links.
 
 ## Scope, Honestly
 
-- The arbiter is a trusted neutral keypair, not a decentralized oracle set. The claim is
-  arbiter-gated settlement between buyer and seller, not fully decentralized arbitration.
+- The arbiter is a trusted neutral keypair in this demo. The claim is arbiter-gated settlement between
+  buyer and seller, not arbitration without a trusted party.
 - If no live LLM provider is funded, the seller returns a deterministic odds read. That keeps the demo
   resilient, but the recorded video should use a live provider.
 - The current product is a fair-line read. A true betting edge needs a bookmaker comparison feed.

@@ -7,9 +7,9 @@
  *
  * Verified working against devnet (2026-06). Two corrections vs. the published TxODDS examples:
  *   1. host is `txline-dev.txodds.com`           (the repo's `oracle-dev.txodds.com` does not resolve)
- *   2. mint is the treasury's `4Zao8o…`          (the IDL's `TXLINE_MINT` constant is stale -> InvalidMint)
+ *   2. mint is the treasury's `4Zao8o...`          (the IDL's `TXLINE_MINT` constant is stale -> InvalidMint)
  *
- * Run:  ANCHOR off — just `npx ts-node server/proxy.ts`  (reads BUYER_KEYPAIR_B58 from the repo .env)
+ * Run:  ANCHOR off - just `npx ts-node server/proxy.ts`  (reads BUYER_KEYPAIR_B58 from the repo .env)
  */
 import http from 'node:http'
 import fs from 'node:fs'
@@ -37,7 +37,7 @@ import { makeProgram, deposit, release, escrowPda } from '../agent/escrow.js'
 // fileURLToPath (not .pathname) so the repo-root .env resolves on macOS/Linux too, not just Windows.
 const ENV_PATH = process.env.KIT_ENV ?? fileURLToPath(new URL('../../../.env', import.meta.url))
 
-// Load the repo .env into process.env FIRST — before the constants below — so .env can override the
+// Load the repo .env into process.env FIRST - before the constants below - so .env can override the
 // program/mint/host, not just keys. A shell env var still wins (we only fill what's undefined). This is
 // the single .env read; everything else reads process.env.
 ;(function loadEnv() {
@@ -46,10 +46,10 @@ const ENV_PATH = process.env.KIT_ENV ?? fileURLToPath(new URL('../../../.env', i
       const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/)
       if (m && process.env[m[1]] === undefined) process.env[m[1]] = m[2].replace(/^["']|["']$/g, '')
     }
-  } catch { /* no .env — rely on the shell env */ }
+  } catch { /* no .env - rely on the shell env */ }
 })()
 
-// TxLINE devnet ids — overridable via .env (TXLINE_PROGRAM / TXLINE_MINT) so a TxODDS rotation is a
+// TxLINE devnet ids - overridable via .env (TXLINE_PROGRAM / TXLINE_MINT) so a TxODDS rotation is a
 // config change, not a code edit. Defaults are the values verified working on devnet (2026-06).
 const PROGRAM = new PublicKey(process.env.TXLINE_PROGRAM ?? '6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J')
 const MINT = new PublicKey(process.env.TXLINE_MINT ?? '4Zao8ocPhmMgq7PdsYWyxvqySMGx7xb9cMftPMkEokRG') // treasury mint
@@ -65,7 +65,7 @@ function buyerKeypair(): Keypair {
   return Keypair.fromSecretKey(bs58.decode(b58.trim()))
 }
 
-/** The neutral arbiter signer (set by setup.js). Present → the demo settles through the arbiter wrapper. */
+/** The neutral arbiter signer (set by setup.js). Present -> the demo settles through the arbiter wrapper. */
 function arbiterKeypair(): Keypair | null {
   const b58 = process.env.ARBITER_KEYPAIR_B58
   return b58 ? Keypair.fromSecretKey(bs58.decode(b58.trim())) : null
@@ -110,7 +110,7 @@ async function ensureToken(): Promise<void> {
   )).data
   apiToken = data.token || data
   if (typeof apiToken !== 'string' || !apiToken) throw new Error('activation returned no token')
-  console.error('[proxy] subscribed + activated — serving live TxODDS data')
+  console.error('[proxy] subscribed + activated - serving live TxODDS data')
 }
 
 async function txGet(path: string): Promise<unknown> {
@@ -122,7 +122,7 @@ async function txGet(path: string): Promise<unknown> {
 }
 
 // A market is real if it has at least one finite price (the live feed is full of rows priced "NA" we
-// must NOT surface). A fixture is board-worthy if it has ANY such market — the free World Cup tier's
+// must NOT surface). A fixture is board-worthy if it has ANY such market - the free World Cup tier's
 // 1X2 odds are intermittent, but over/under + Asian-handicap markets are usually present, and those
 // are verified de-margined odds too. 1X2 fixtures are still preferred (sorted first) when available.
 const hasFinitePrice = (m: any): boolean =>
@@ -159,12 +159,12 @@ async function board(): Promise<any[]> {
   await Promise.all(Array.from({ length: 6 }, () => worker()))
   const data = (results.filter(Boolean) as any[])
     .sort((a, b) => Number(has1x2(b.odds)) - Number(has1x2(a.odds))) // 1X2 fixtures first
-  if (data.length) { boardCache = { at: Date.now(), data }; return data } // got a live board — cache it
-  if (boardCache.data.length && Date.now() - boardCache.at < 300_000) return boardCache.data // flicker — keep last good
+  if (data.length) { boardCache = { at: Date.now(), data }; return data } // got a live board - cache it
+  if (boardCache.data.length && Date.now() - boardCache.at < 300_000) return boardCache.data // flicker - keep last good
   return data // genuinely nothing priced right now
 }
 
-/** The verified fair favourite for a board fixture (deterministic — no LLM), for the order commitment. */
+/** The verified fair favourite for a board fixture (deterministic - no LLM), for the order commitment. */
 function favouriteOf(fx: any): { label: string; pct: number; fairOdds: number } | undefined {
   const odds = (fx?.odds ?? []) as any[]
   const m = odds.find((x) => String(x?.SuperOddsType ?? '').includes('1X2') && hasFinitePrice(x)) ?? odds.find(hasFinitePrice)
@@ -176,7 +176,7 @@ function favouriteOf(fx: any): { label: string; pct: number; fairOdds: number } 
 /**
  * The escrow `reference` BOUND to the order: `sha256("txodds:<fixtureId>:<favourite>@<fairOdds>:<nonce>")`.
  * A reference is just a 32-byte PDA seed (need not be on-curve), so the digest is the PublicKey directly.
- * The on-chain PDA then provably corresponds to exactly the read bought — anyone with `order.preimage`
+ * The on-chain PDA then provably corresponds to exactly the read bought - anyone with `order.preimage`
  * can recompute it. The nonce keeps each settle's PDA unique. Shared by the direct + arbiter flows.
  */
 async function boundReference(fixtureId: string): Promise<{ reference: PublicKey; order: any }> {
@@ -194,7 +194,7 @@ async function boundReference(fixtureId: string): Promise<{ reference: PublicKey
 }
 
 /**
- * Run a real devnet escrow deposit→release so the demo can link the settlement on-chain. The escrow
+ * Run a real devnet escrow deposit->release so the demo can link the settlement on-chain. The escrow
  * `reference` is BOUND to the order: it's `sha256("txodds:<fixtureId>:<favourite>@<fairOdds>:<nonce>")`,
  * so the on-chain PDA provably corresponds to exactly the read that was bought (anyone with the returned
  * `order.preimage` can recompute it). The nonce keeps each settle's PDA unique. The seller is a distinct
@@ -234,11 +234,11 @@ async function ensureArbiterConfig(admin: Keypair, arbiter: PublicKey): Promise<
   try {
     await (program.account as any).config.fetch(configPda())
     return // already configured
-  } catch { /* not yet — set it below */ }
+  } catch { /* not yet - set it below */ }
   await initConfig(program, admin, arbiter)
 }
 
-/** Keep the arbiter funded for tx fees by topping up from the payer when low — so a fresh checkout
+/** Keep the arbiter funded for tx fees by topping up from the payer when low - so a fresh checkout
  * (setup.js generates an unfunded arbiter keypair) settles out of the box. */
 async function ensureArbiterFunded(payer: Keypair, arbiter: PublicKey): Promise<void> {
   const connection = new Connection(RPC, 'confirmed')
@@ -250,7 +250,7 @@ async function ensureArbiterFunded(payer: Keypair, arbiter: PublicKey): Promise<
 }
 
 /**
- * The trustless 3-party settlement (the arbiter wrapper). The buyer (payer) `open`s an order — funds a
+ * The trusted-neutral 3-party settlement (the arbiter wrapper). The buyer (payer) `open`s an order - funds a
  * vault PDA that becomes the escrow's buyer, so the buyer can NO LONGER unilaterally release/refund.
  * Then the neutral **arbiter** attests delivery and releases to the seller. The seller is protected.
  * Same order-bound `reference` as the direct path. Throws on failure so the route can fall back.
@@ -267,9 +267,9 @@ async function settleViaArbiter(amountSol: number, fixtureId: string): Promise<u
 
   await ensureArbiterConfig(buyer, arbiter.publicKey)
   await ensureArbiterFunded(buyer, arbiter.publicKey)
-  // 1) buyer opens the arbitrated order (funds the vault → escrow, vault = buyer)
+  // 1) buyer opens the arbitrated order (funds the vault -> escrow, vault = buyer)
   const openSig = await arbiterOpen(makeArbiter(buyer, RPC), buyer, seller, reference, amount, 600)
-  // 2) the neutral arbiter attests delivery → releases to the seller
+  // 2) the neutral arbiter attests delivery -> releases to the seller
   const releaseSig = await arbitrateRelease(makeArbiter(arbiter, RPC), arbiter, seller, reference)
 
   const vault = vaultPda(reference)
@@ -291,20 +291,20 @@ http
     try {
       const url = new URL(req.url ?? '/', `http://localhost:${PORT}`)
       if (url.pathname === '/api/board') {
-        // only fixtures with verified live 1X2 odds (odds inlined) — what the dashboard renders
+        // only fixtures with verified live 1X2 odds (odds inlined) - what the dashboard renders
         res.end(JSON.stringify(await board()))
       } else if (url.pathname === '/api/fixtures') {
         res.end(JSON.stringify(await txGet('/api/fixtures/snapshot')))
       } else if (url.pathname === '/api/odds') {
         res.end(JSON.stringify(await txGet(`/api/odds/snapshot/${url.searchParams.get('fixtureId') ?? ''}`)))
       } else if (url.pathname === '/api/edge') {
-        // verified data (TxLINE) → LLM call: the on-thesis product, shared with the agent via analyzeEdge.
+        // verified data (TxLINE) -> LLM call: the on-thesis product, shared with the agent via analyzeEdge.
         const fixtureId = url.searchParams.get('fixtureId') ?? ''
         const [live, fixtures] = await Promise.all([
           txGet(`/api/odds/snapshot/${fixtureId}`).catch(() => []),
           txGet('/api/fixtures/snapshot'),
         ])
-        // the free feed flickers to empty between calls — fall back to the odds the board already
+        // the free feed flickers to empty between calls - fall back to the odds the board already
         // verified for this fixture, so the call never sees "no data" for a fixture the board shows.
         let odds = live
         if (!(Array.isArray(odds) && (odds as any[]).some(hasFinitePrice))) {
@@ -313,7 +313,7 @@ http
         }
         res.end(JSON.stringify(await analyzeEdge({ fixtureId, odds, fixtures })))
       } else if (url.pathname === '/api/settle') {
-        // settle on devnet with the reference bound to the order. Prefer the trustless arbiter wrapper
+        // settle on devnet with the reference bound to the order. Prefer the arbiter-gated wrapper
         // (3 parties, seller-protected); fall back to the direct buyer-released escrow if it errors.
         const amount = Number(url.searchParams.get('amount') ?? '0.001')
         const fixtureId = url.searchParams.get('fixtureId') ?? ''
@@ -355,4 +355,4 @@ http
       res.end(JSON.stringify({ error: (e as Error).message, detail: (e as any)?.response?.data }))
     }
   })
-  .listen(PORT, () => console.error(`[proxy] http://localhost:${PORT}  (GET /api/board · /api/fixtures · /api/odds?fixtureId= · /api/edge?fixtureId= · /api/settle?amount=)`))
+  .listen(PORT, () => console.error(`[proxy] http://localhost:${PORT}  (GET /api/board - /api/fixtures - /api/odds?fixtureId= - /api/edge?fixtureId= - /api/settle?amount=)`))

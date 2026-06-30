@@ -26,7 +26,7 @@ describe('verifyPayment (reference-bound)', () => {
     expect(await verifyPayment('sig', REFERENCE)).toBe(true)
   })
 
-  it('rejects when validateTransfer throws (mismatch / not found / RPC error) — fails closed', async () => {
+  it('rejects when validateTransfer throws (mismatch / not found / RPC error) - fails closed', async () => {
     validateTransfer.mockRejectedValue(new Error('amount/recipient/reference mismatch'))
     expect(await verifyPayment('sig', REFERENCE)).toBe(false)
   })

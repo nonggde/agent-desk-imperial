@@ -1,12 +1,12 @@
 /**
- * Buyer agent — the marketplace buyer. Broadcasts a WANT into a shared CoralOS thread, collects
+ * Buyer agent - the marketplace buyer. Broadcasts a WANT into a shared CoralOS thread, collects
  * competing LLM bids, picks the best value, and settles through the escrow contract:
  *
- *   WANT → (collect BIDs for a window) → AWARD winner → wait ESCROW_REQUIRED →
- *   deposit() into escrow → DEPOSITED → wait DELIVERED → release() to the seller
+ *   WANT -> (collect BIDs for a window) -> AWARD winner -> wait ESCROW_REQUIRED ->
+ *   deposit() into escrow -> DEPOSITED -> wait DELIVERED -> release() to the seller
  *
  * Selection uses the LLM (best value), with a deterministic cheapest fallback so a slow/missing model
- * never hangs the round. Settlement is escrow-only — funds are conditional on delivery.
+ * never hangs the round. Settlement is escrow-only - funds are conditional on delivery.
  *
  * Env: BUYER_KEYPAIR_B58 (signs), BUYER_MAX_SOL (budget), BUYER_SERVICE/BUYER_ARG (the WANT),
  *      MARKET_SELLERS (csv of seller names), BID_WINDOW_MS, SOLANA_RPC_URL,
@@ -41,7 +41,7 @@ const CYCLE_MS = Number(process.env.CYCLE_INTERVAL_MS ?? '30000')
 const SELLERS = (process.env.MARKET_SELLERS ?? 'seller-worldcup,seller-fast,seller-premium')
   .split(',').map((s) => s.trim()).filter(Boolean)
 // F3: the payout wallet the buyer expects (personas share one in the demo). If set, the buyer refuses
-// to deposit to an ESCROW_REQUIRED whose seller= pubkey differs — binding the award to the payout.
+// to deposit to an ESCROW_REQUIRED whose seller= pubkey differs - binding the award to the payout.
 const EXPECTED_SELLER_WALLET = process.env.SELLER_WALLET ?? ''
 const SETTLEMENT_MODE = (process.env.SETTLEMENT_MODE ?? 'arbiter').toLowerCase()
 const trace = process.env.TRACE === '1'
@@ -91,7 +91,7 @@ async function waitFor<T>(
 await startCoralAgent({ agentName: process.env.AGENT_NAME ?? 'buyer-agent' }, async (ctx) => {
   const buyer = loadKeypairB58('BUYER_KEYPAIR_B58')
   const arbiter = SETTLEMENT_MODE === 'arbiter' ? loadKeypairB58('ARBITER_KEYPAIR_B58') : null
-  console.error(`[buyer] market buyer — wallet=${buyer.publicKey.toBase58()} budget=${BUDGET} sellers=[${SELLERS.join(',')}]`)
+  console.error(`[buyer] market buyer - wallet=${buyer.publicKey.toBase58()} budget=${BUDGET} sellers=[${SELLERS.join(',')}]`)
 
   for (const s of SELLERS) {
     try { await ctx.waitForAgent(s, 8000) } catch { /* seller may already be present */ }
@@ -111,7 +111,7 @@ await startCoralAgent({ agentName: process.env.AGENT_NAME ?? 'buyer-agent' }, as
       if (trace) console.error(`[buyer] round ${round}: WANT ${SERVICE} ${arg} budget=${BUDGET}`)
       await ctx.send(formatWant({ round, service: SERVICE, arg, budgetSol: BUDGET }), thread, SELLERS)
 
-      // ── collect competing bids during the window ──────────────────────────
+      // -- collect competing bids during the window --------------------------
       const bids: Bid[] = []
       const deadline = Date.now() + BID_WINDOW_MS
       while (Date.now() < deadline) {
@@ -123,15 +123,15 @@ await startCoralAgent({ agentName: process.env.AGENT_NAME ?? 'buyer-agent' }, as
       const pool = selectBids(bids, round)
       if (pool.length === 0) { console.error(`[buyer] round ${round}: NO_SELLERS`); await sleep(CYCLE_MS); continue }
 
-      // ── award the best value ──────────────────────────────────────────────
+      // -- award the best value ----------------------------------------------
       const { winner, reason } = await pickWinner(pool)
       await ctx.send(formatAward(round, winner.by, reason), thread, [winner.by])
 
-      // ── settle through escrow: deposit → DEPOSITED → wait DELIVERED → release
+      // -- settle through escrow: deposit -> DEPOSITED -> wait DELIVERED -> release
       const terms = await waitFor<EscrowTerms>(ctx, round, parseEscrowRequired, 15_000)
       if (!terms) { console.error(`[buyer] round ${round}: no escrow terms from ${winner.by}`); await sleep(CYCLE_MS); continue }
       if (!payoutMatches(terms.seller, EXPECTED_SELLER_WALLET)) {
-        console.error(`[buyer] round ${round}: escrow payout ${terms.seller} ≠ expected ${EXPECTED_SELLER_WALLET} — skipping`)
+        console.error(`[buyer] round ${round}: escrow payout ${terms.seller} != expected ${EXPECTED_SELLER_WALLET} - skipping`)
         await sleep(CYCLE_MS); continue
       }
 
@@ -148,7 +148,7 @@ await startCoralAgent({ agentName: process.env.AGENT_NAME ?? 'buyer-agent' }, as
       } else {
         depositSig = await deposit(program, buyer, seller, reference, terms.amountSol, terms.deadlineSecs)
       }
-      console.error(`[buyer] round ${round}: DEPOSITED ${terms.amountSol} SOL → ${winner.by}`)
+      console.error(`[buyer] round ${round}: DEPOSITED ${terms.amountSol} SOL -> ${winner.by}`)
       if (trace) {
         if (requestedSettlement === 'arbiter' && vault) {
           console.error(`[buyer]   arbiter: ${expl('address', ARBITER_PROGRAM_ID.toBase58())}`)
@@ -185,7 +185,7 @@ await startCoralAgent({ agentName: process.env.AGENT_NAME ?? 'buyer-agent' }, as
         console.error(`[buyer] round ${round}: ${releaseVerb} to ${winner.by} - ${expl('tx', releaseSig)}`)
         await ctx.send(`${releaseVerb} round=${round} sig=${releaseSig} settlement=${requestedSettlement}`, thread, [winner.by])
       } else {
-        console.error(`[buyer] round ${round}: no delivery — funds stay in escrow, refundable after the deadline`)
+        console.error(`[buyer] round ${round}: no delivery - funds stay in escrow, refundable after the deadline`)
       }
     } catch (e) {
       console.error(`[buyer] round error: ${e}`)

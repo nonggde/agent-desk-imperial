@@ -14,7 +14,7 @@ The remaining items are external setup (fund a live LLM provider) or larger foll
 | P0 | LLM is currently fallback | The thesis is "AI agents buying/selling reads"; deterministic fallback weakens the product story on video. | External: top up Anthropic or set `LLM_PROVIDER=openai` with a funded OpenAI key. | S |
 | P1 | Market is effectively 1:1 | One buyer plus one seller is coordination, not a market. | Done: `round.ts` launches three TxODDS seller personas; specialist is priced to win. | S |
 | P1 | Seller agent has legacy generic services | CoinGecko/Jupiter/news code distracts from the TxODDS story. | Done: `service.ts` is TxODDS-only and seller docs describe legacy helpers as outside the loop. | S |
-| P1 | Arbiter is centralized | One proxy-controlled arbiter key makes "trustless" easy to challenge. | Done in docs: described as arbiter-gated with a trusted neutral arbiter, not decentralized arbitration. | S |
+| P1 | Arbiter is centralized | One proxy-controlled arbiter key makes overbroad settlement claims easy to challenge. | Done in docs: described as arbiter-gated with a trusted neutral arbiter. | S |
 | P2 | Product value is thin | The read restates de-margined odds; there is not yet a real betting edge. | Be honest now; stretch goal is bookmaker comparison for true edge. | L |
 | P2 | No Rust CI | Devnet tests cannot run in Actions, so contract regressions are not caught in CI. | Add LiteSVM/Mollusk contract tests. | M |
 | P2 | Free TxLINE tier is brittle | Intermittent feed/tokens can undermine demos. | Keep fallback data, document the dependency, and prefer a warmed token/session before recording. | S |
@@ -97,13 +97,12 @@ base escrow path. That means the best innovations are absent from the multi-agen
 
 ## P1: Tighten Arbiter Language
 
-**Problem:** a single arbiter key controlled by the proxy is not decentralized.
+**Problem:** a single arbiter key controlled by the proxy is a trusted neutral party.
 
 **Fix:**
 
-- Avoid saying simply "trustless" without qualification.
-- Prefer "arbiter-gated", "buyer cannot unilaterally claw back", and "trustless between buyer and seller, with a trusted neutral arbiter".
-- Document production upgrades: staked arbiters, multisig arbiters, decentralized oracle set.
+- Avoid wording that implies the arbiter has no trusted keypair.
+- Prefer "arbiter-gated", "buyer cannot unilaterally claw back", and "trusted neutral arbiter".
 
 ## P2: Product Depth
 

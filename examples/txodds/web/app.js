@@ -1,5 +1,5 @@
-// World Cup Oracle — a captivating React 18 app (no build) over LIVE TxODDS devnet data.
-// Talks to the local proxy (../server/proxy.ts: GET /api/board — only fixtures with verified live 1X2
+// World Cup Oracle - a captivating React 18 app (no build) over LIVE TxODDS devnet data.
+// Talks to the local proxy (../server/proxy.ts: GET /api/board - only fixtures with verified live 1X2
 // odds, inlined). If the proxy/token isn't up it shows a clearly-labelled demo board; it never mixes
 // demo numbers into a live fixture.
 
@@ -11,7 +11,7 @@ import { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } f
 const html = htm.bind(React.createElement)
 const PROXY = window.TXODDS_PROXY ?? 'http://localhost:8801'
 
-// ── flags + abbreviations (national teams) ──────────────────────────────────
+// -- flags + abbreviations (national teams) ----------------------------------
 const FLAGS = {
   brazil: 'br', argentina: 'ar', france: 'fr', england: 'gb-eng', spain: 'es', germany: 'de',
   portugal: 'pt', netherlands: 'nl', italy: 'it', belgium: 'be', croatia: 'hr', uruguay: 'uy',
@@ -20,7 +20,7 @@ const FLAGS = {
   ecuador: 'ec', ghana: 'gh', cameroon: 'cm', 'saudi arabia': 'sa', australia: 'au', canada: 'ca',
   qatar: 'qa', tunisia: 'tn', wales: 'gb-wls', scotland: 'gb-sct', 'northern ireland': 'gb-nir',
   ireland: 'ie', norway: 'no', sweden: 'se', austria: 'at', 'czech republic': 'cz', czechia: 'cz',
-  turkey: 'tr', 'türkiye': 'tr', ukraine: 'ua', colombia: 'co', chile: 'cl', peru: 'pe', paraguay: 'py',
+  turkey: 'tr', turkiye: 'tr', ukraine: 'ua', colombia: 'co', chile: 'cl', peru: 'pe', paraguay: 'py',
   nigeria: 'ng', egypt: 'eg', algeria: 'dz', 'ivory coast': 'ci', greece: 'gr', hungary: 'hu',
   romania: 'ro', iran: 'ir', china: 'cn', 'costa rica': 'cr', panama: 'pa', jamaica: 'jm',
   'new zealand': 'nz', 'south africa': 'za', slovenia: 'si', slovakia: 'sk', finland: 'fi',
@@ -44,7 +44,7 @@ function Flag({ name, size }) {
     src=${`https://flagcdn.com/${big ? 'w160' : 'w80'}/${code}.png`} onError=${() => setBad(true)} />`
 }
 
-// ── demo fallback data (realistic de-margined 1X2) ──────────────────────────
+// -- demo fallback data (realistic de-margined 1X2) --------------------------
 const soon = (h) => new Date(Date.now() + h * 3600_000).toISOString()
 const mkt = (pct) => [{ Bookmaker: 'StablePrice', SuperOddsType: '1X2 (de-margined)', PriceNames: ['part1', 'draw', 'part2'], Pct: pct }]
 const DEMO_FIXTURES = [
@@ -64,11 +64,11 @@ const DEMO_ODDS = {
 }
 const demoOddsFor = (id) => DEMO_ODDS[id] ?? mkt([45, 27, 28])
 
-// fair (break-even) decimal odds = 100 / implied probability — the price a book must beat for value.
+// fair (break-even) decimal odds = 100 / implied probability - the price a book must beat for value.
 const fairOdds = (pct) => { const p = Number(pct); return Number.isFinite(p) && p > 0 ? 100 / p : NaN }
-const fmtOdds = (pct) => { const o = fairOdds(pct); return Number.isFinite(o) ? o.toFixed(2) : '—' }
+const fmtOdds = (pct) => { const o = fairOdds(pct); return Number.isFinite(o) ? o.toFixed(2) : '-' }
 
-// client-side fair line + read (used when the proxy/LLM is offline) — mirrors agent/edge.ts
+// client-side fair line + read (used when the proxy/LLM is offline) - mirrors agent/edge.ts
 function clientFair(m, teams) {
   const labelOf = { part1: teams.home, part2: teams.away, draw: 'Draw', over: 'Over', under: 'Under' }
   const outcomes = []
@@ -84,7 +84,7 @@ function clientRead(fair) {
   if (!f) return { call: 'no priced market for this fixture', confidence: 0, note: 'deterministic' }
   const alt = fair.outcomes.filter((o) => o !== f).sort((a, b) => b.pct - a.pct)[0]
   return {
-    call: `${f.label} is the verified favourite at ${f.pct.toFixed(0)}% — fair odds ${f.fairOdds.toFixed(2)}${alt ? `; ${alt.label} the main alternative at ${alt.pct.toFixed(0)}%` : ''}.`,
+    call: `${f.label} is the verified favourite at ${f.pct.toFixed(0)}% - fair odds ${f.fairOdds.toFixed(2)}${alt ? `; ${alt.label} the main alternative at ${alt.pct.toFixed(0)}%` : ''}.`,
     confidence: Number((f.pct / 100).toFixed(2)), note: 'deterministic (demo)',
   }
 }
@@ -97,15 +97,15 @@ const clientEdge = (fx) => {
   return { fixtureId: String(fx.FixtureId), teams, market: { names: m.PriceNames, pct: m.Pct }, fair, analysis: clientRead(fair), demo: !live }
 }
 const ESCROW_PROGRAM = 'R5NWNg9eRLWWQU81Xbzz5Du1k7jTDeeT92Ty6qCeXet'
-// ≥ the rent-exempt minimum (~0.00089 SOL) so the release makes a brand-new seller account rent-exempt
-// in one shot — otherwise the first payout to a fresh wallet is rejected ("insufficient funds for rent").
+// >= the rent-exempt minimum (~0.00089 SOL) so the release makes a brand-new seller account rent-exempt
+// in one shot - otherwise the first payout to a fresh wallet is rejected ("insufficient funds for rent").
 const SETTLE_SOL = 0.001
-const shortAddr = (a) => (a ? `${String(a).slice(0, 4)}…${String(a).slice(-4)}` : '')
+const shortAddr = (a) => (a ? `${String(a).slice(0, 4)}...${String(a).slice(-4)}` : '')
 const addrLink = (a) => `https://explorer.solana.com/address/${a}?cluster=devnet`
 const txLink = (s) => `https://explorer.solana.com/tx/${s}?cluster=devnet`
 const DEVNET_RPC = 'https://api.devnet.solana.com'
 
-// Detect an injected browser wallet (Phantom / Solflare) — no wallet-adapter needed for a no-build app.
+// Detect an injected browser wallet (Phantom / Solflare) - no wallet-adapter needed for a no-build app.
 function getWallet() {
   const w = window
   const phantom = w.phantom?.solana ?? (w.solana?.isPhantom ? w.solana : null)
@@ -115,11 +115,11 @@ function getWallet() {
   return null
 }
 
-// ── odds board ──────────────────────────────────────────────────────────────
+// -- odds board --------------------------------------------------------------
 // LIVE TxODDS markets are messy: Pct values arrive as strings ("41.946"), some priced "NA",
 // and many fixtures carry only over/under or Asian-handicap rows with no 1X2. Pick the best
-// renderable market — a 1X2 result with usable numbers first, else any market that has at
-// least one finite percentage — and treat every percentage as possibly-missing throughout.
+// renderable market - a 1X2 result with usable numbers first, else any market that has at
+// least one finite percentage - and treat every percentage as possibly-missing throughout.
 const hasUsablePct = (m) =>
   Array.isArray(m?.PriceNames) && m.PriceNames.some((_, i) => Number.isFinite(Number((m.Pct || [])[i])))
 function pickMarket(odds) {
@@ -130,7 +130,7 @@ function pickMarket(odds) {
 }
 
 function Board({ fixture, odds, loading }) {
-  if (loading) return html`<div class="board"><p class="muted">fetching de-margined odds…</p></div>`
+  if (loading) return html`<div class="board"><p class="muted">fetching de-margined odds...</p></div>`
   const m = pickMarket(odds)
   const names = Array.isArray(m?.PriceNames) ? m.PriceNames : null
   if (!names) return html`<div class="board"><p class="muted">No priced market for this fixture yet.</p></div>`
@@ -142,10 +142,10 @@ function Board({ fixture, odds, loading }) {
   pct.forEach((p, i) => { if (Number.isFinite(p) && p > favVal) { favVal = p; favI = i } })
   if (favI < 0) return html`<div class="board"><p class="muted">No priced market for this fixture yet.</p></div>`
   const favLabel = labelOf[names[favI]] ?? names[favI]
-  const fmt = (p) => (Number.isFinite(p) ? p.toFixed(0) : '—')
+  const fmt = (p) => (Number.isFinite(p) ? p.toFixed(0) : '-')
   return html`
     <div class="board">
-      <div class="board-head"><span>${m.Bookmaker} · ${m.SuperOddsType}</span><span class="bh-cols"><span>fair prob</span><span>fair odds</span></span></div>
+      <div class="board-head"><span>${m.Bookmaker} - ${m.SuperOddsType}</span><span class="bh-cols"><span>fair prob</span><span>fair odds</span></span></div>
       ${names.map((name, i) => html`
         <div class=${'outcome' + (i === favI ? ' fav' : '')} key=${name}>
           <span class="label">${labelOf[name] ?? name}</span>
@@ -154,8 +154,8 @@ function Board({ fixture, odds, loading }) {
           <span class="odds">${fmtOdds(pct[i])}</span>
         </div>`)}
       <div class="edge">
-        <span class="e-text"><b>${favLabel}</b> — verified favourite at <b>${fmt(pct[favI])}%</b> · fair price <b>${fmtOdds(pct[favI])}</b>
-          <div class="e-sub">fair (break-even) odds = 100 ÷ probability — a bet only has value ABOVE this price</div>
+        <span class="e-text"><b>${favLabel}</b> - verified favourite at <b>${fmt(pct[favI])}%</b> - fair price <b>${fmtOdds(pct[favI])}</b>
+          <div class="e-sub">fair (break-even) odds = 100 / probability - a bet only has value ABOVE this price</div>
         </span>
         <span class="e-cta">txline ${fixture.FixtureId}</span>
       </div>
@@ -174,9 +174,9 @@ function MatchCard({ fx, on, onSelect }) {
     </div>`
 }
 
-// the agent's read of the verified fair line (+ the break-even price) — the product being sold
+// the agent's read of the verified fair line (+ the break-even price) - the product being sold
 function EdgeCard({ edge }) {
-  if (!edge) return html`<div class="edgecard"><p class="muted">reading the fair line…</p></div>`
+  if (!edge) return html`<div class="edgecard"><p class="muted">reading the fair line...</p></div>`
   const a = edge.analysis || {}
   const fav = edge.fair?.favourite
   const conf = typeof a.confidence === 'number' ? Math.round(a.confidence * 100) : null
@@ -196,92 +196,92 @@ function EdgeCard({ edge }) {
         <div class="ec-conf"><span>how decisive</span>
           <div class="ec-bar"><div class="ec-fill" style=${{ width: `${conf}%` }}></div></div><b>${conf}%</b></div>`}
       <p class="ec-honest">A read of the <b>verified fair line</b>, not a tip. Calling true "value" needs a sportsbook's
-        offered price to compare against — the free TxODDS tier carries only the fair line.</p>
+        offered price to compare against - the free TxODDS tier carries only the fair line.</p>
     </div>`
 }
 
-// the explainer — what the app actually does, end to end, threaded with the selected fixture's numbers
+// the explainer - what the app actually does, end to end, threaded with the selected fixture's numbers
 function Pipeline({ edge, source, settleRes }) {
   const fav = edge?.fair?.favourite
   const steps = [
     { n: 1, title: 'Verified data',
-      desc: 'TxODDS de-margined World Cup odds — true-probability estimates with the bookmaker margin stripped out — fetched over a token-gated subscription on Solana devnet.',
+      desc: 'TxODDS de-margined World Cup odds - true-probability estimates with the bookmaker margin stripped out - fetched over a token-gated subscription on Solana devnet.',
       live: fav ? `${fav.label} ${fav.pct.toFixed(0)}%` : (source === 'live' ? 'live' : 'sample') },
     { n: 2, title: 'Fair line + price to beat',
-      desc: 'The agent turns each probability into its fair (break-even) decimal odds = 100 ÷ probability — the price a sportsbook must beat for a bet to have value — plus a one-line LLM read.',
-      live: fav ? `fair odds ${fav.fairOdds.toFixed(2)}` : '—' },
+      desc: 'The agent turns each probability into its fair (break-even) decimal odds = 100 / probability - the price a sportsbook must beat for a bet to have value - plus a one-line LLM read.',
+      live: fav ? `fair odds ${fav.fairOdds.toFixed(2)}` : '-' },
     { n: 3, title: 'Settled by a neutral arbiter',
-      desc: 'The buyer funds a per-order escrow but can’t unilaterally refund — a neutral arbiter program releases to the seller on verified delivery (so neither side can cheat). The escrow reference is bound to the read (sha256), so the on-chain order IS the data bought. Real devnet txs, linked on Explorer.',
-      live: settleRes?.ok ? `${settleRes.amountSol} SOL${settleRes.mode === 'arbiter' ? ' · arbiter' : ''}` : `${SETTLE_SOL} SOL` },
+      desc: 'The buyer funds a per-order escrow but cannot unilaterally refund - a trusted neutral arbiter program releases to the seller on verified delivery. The escrow reference is bound to the read (sha256), so the on-chain order IS the data bought. Real devnet txs, linked on Explorer.',
+      live: settleRes?.ok ? `${settleRes.amountSol} SOL${settleRes.mode === 'arbiter' ? ' - arbiter' : ''}` : `${SETTLE_SOL} SOL` },
   ]
   return html`
     <section class="pipeline">
-      <div class="pipe-title">What this does, end to end <span>— verified data → a usable read → paid on-chain</span></div>
+      <div class="pipe-title">What this does, end to end <span>- verified data -> a usable read -> paid on-chain</span></div>
       <div class="pipe-steps">
         ${steps.map((s, i) => html`
           <div class="pipe-step" key=${s.n}>
             <div class="pipe-h"><span class="pipe-n">0${s.n}</span><span class="pipe-live">${s.live}</span></div>
             <h4>${s.title}</h4>
             <p>${s.desc}</p>
-            ${i < 2 && html`<span class="pipe-arrow">→</span>`}
+            ${i < 2 && html`<span class="pipe-arrow">-></span>`}
           </div>`)}
       </div>
     </section>`
 }
 
-// the settlement — a real devnet escrow round, linked on Explorer. Two modes: the trustless arbiter
+// the settlement - a real devnet escrow round, linked on Explorer. Two modes: the arbiter-gated
 // wrapper (3 parties; the buyer can't unilaterally refund) or the direct buyer-released escrow.
 function BindLine({ r }) {
   if (!r.order?.favourite) return null
   return html`
     <div class="settled-line bind">
       <span class="bind-tag">bound</span> this payment references
-      <b>${r.order.favourite} @ ${r.order.fairOdds}</b>${r.order.matchup ? ` · ${r.order.matchup}` : ''}
+      <b>${r.order.favourite} @ ${r.order.fairOdds}</b>${r.order.matchup ? ` - ${r.order.matchup}` : ''}
       <span class="bind-ref">ref ${shortAddr(r.reference)} = sha256(${r.order.preimage})</span>
     </div>`
 }
 function SettleResult({ r }) {
   if (r.ok && r.mode === 'arbiter') return html`
     <div class="settled ok">
-      <div class="settled-line">settled <b>${r.amountSol} SOL</b> via the arbiter — buyer
-        <a href=${addrLink(r.buyer)} target="_blank" rel="noreferrer">${shortAddr(r.buyer)}</a> funds escrow ·
+      <div class="settled-line">settled <b>${r.amountSol} SOL</b> via the arbiter - buyer
+        <a href=${addrLink(r.buyer)} target="_blank" rel="noreferrer">${shortAddr(r.buyer)}</a> funds escrow -
         arbiter <a href=${addrLink(r.arbiter)} target="_blank" rel="noreferrer">${shortAddr(r.arbiter)}</a> releases
-        <span class="settled-arrow">→</span> seller <a href=${addrLink(r.seller)} target="_blank" rel="noreferrer">${shortAddr(r.seller)}</a>
-        ${r.selfPay && html`<span class="settled-note">self-pay seller — set a distinct SELLER_WALLET</span>`}
+        <span class="settled-arrow">-></span> seller <a href=${addrLink(r.seller)} target="_blank" rel="noreferrer">${shortAddr(r.seller)}</a>
+        ${r.selfPay && html`<span class="settled-note">self-pay seller - set a distinct SELLER_WALLET</span>`}
       </div>
-      <div class="settled-line trustless">
-        <span class="bind-tag arb">trustless</span> the buyer can't take delivery and refund — only the neutral
-        arbiter can release, gated on verified delivery, so the seller is protected
+      <div class="settled-line arbiter-note">
+        <span class="bind-tag arb">arbiter</span> buyer cannot take delivery and refund - only the trusted neutral
+        arbiter can release, gated on verified delivery
       </div>
       <${BindLine} r=${r} />
       <div class="settled-line links">
-        <a href=${r.open.explorer} target="_blank" rel="noreferrer">open ↗</a> ·
-        <a href=${r.release.explorer} target="_blank" rel="noreferrer">arbiter release ↗</a> ·
-        <a href=${r.escrow.explorer} target="_blank" rel="noreferrer">escrow PDA ↗</a>
+        <a href=${r.open.explorer} target="_blank" rel="noreferrer">open open</a> -
+        <a href=${r.release.explorer} target="_blank" rel="noreferrer">arbiter release open</a> -
+        <a href=${r.escrow.explorer} target="_blank" rel="noreferrer">escrow PDA open</a>
       </div>
     </div>`
   if (r.ok) return html`
     <div class="settled ok">
-      <div class="settled-line">settled <b>${r.amountSol} SOL</b> on devnet — buyer
+      <div class="settled-line">settled <b>${r.amountSol} SOL</b> on devnet - buyer
         <a href=${addrLink(r.buyer)} target="_blank" rel="noreferrer">${shortAddr(r.buyer)}</a>
-        <span class="settled-arrow">→</span> seller
+        <span class="settled-arrow">-></span> seller
         <a href=${addrLink(r.seller)} target="_blank" rel="noreferrer">${shortAddr(r.seller)}</a>
-        ${r.selfPay && html`<span class="settled-note">self-pay — set a distinct SELLER_WALLET to split the parties</span>`}
+        ${r.selfPay && html`<span class="settled-note">self-pay - set a distinct SELLER_WALLET to split the parties</span>`}
       </div>
       <${BindLine} r=${r} />
       <div class="settled-line links">
-        <a href=${r.deposit.explorer} target="_blank" rel="noreferrer">deposit ↗</a> ·
-        <a href=${r.release.explorer} target="_blank" rel="noreferrer">release ↗</a> ·
-        <a href=${r.escrow.explorer} target="_blank" rel="noreferrer">escrow PDA ↗</a>
+        <a href=${r.deposit.explorer} target="_blank" rel="noreferrer">deposit open</a> -
+        <a href=${r.release.explorer} target="_blank" rel="noreferrer">release open</a> -
+        <a href=${r.escrow.explorer} target="_blank" rel="noreferrer">escrow PDA open</a>
       </div>
     </div>`
   return html`
-    <div class="settled sim">live settle unavailable${r.error ? ` (${String(r.error).slice(0, 70)})` : ''} —
+    <div class="settled sim">live settle unavailable${r.error ? ` (${String(r.error).slice(0, 70)})` : ''} -
       needs a funded devnet buyer wallet (.env). See the
-      <a href=${addrLink(ESCROW_PROGRAM)} target="_blank" rel="noreferrer">escrow program ↗</a></div>`
+      <a href=${addrLink(ESCROW_PROGRAM)} target="_blank" rel="noreferrer">escrow program open</a></div>`
 }
 
-// Pay for the read yourself with Phantom / Solflare — a real Solana Pay reference-tagged transfer to
+// Pay for the read yourself with Phantom / Solflare - a real Solana Pay reference-tagged transfer to
 // the seller, verified on-chain by the proxy. The wallet signs; we submit to devnet so the cluster is
 // guaranteed regardless of the wallet's setting. (Needs a Devnet-funded wallet.)
 function PayButton({ fixture }) {
@@ -289,14 +289,14 @@ function PayButton({ fixture }) {
   const wallet = getWallet()
 
   const pay = async () => {
-    if (!wallet) { setSt({ status: 'error', msg: 'No Phantom/Solflare detected — install one and switch it to Devnet' }); return }
+    if (!wallet) { setSt({ status: 'error', msg: 'No Phantom/Solflare detected - install one and switch it to Devnet' }); return }
     try {
-      setSt({ status: 'busy', msg: 'connecting wallet…' })
+      setSt({ status: 'busy', msg: 'connecting wallet...' })
       const { provider } = wallet
       const conn = await provider.connect()
       const payer = new PublicKey((conn?.publicKey ?? provider.publicKey).toString())
 
-      setSt({ status: 'busy', msg: 'building payment…' })
+      setSt({ status: 'busy', msg: 'building payment...' })
       const intent = await (await fetch(`${PROXY}/api/pay-intent?fixtureId=${fixture.FixtureId}&amount=${SETTLE_SOL}`)).json()
       const connection = new Connection(DEVNET_RPC, 'confirmed')
       const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed')
@@ -307,10 +307,10 @@ function PayButton({ fixture }) {
       ix.keys.push({ pubkey: new PublicKey(intent.reference), isSigner: false, isWritable: false }) // Solana Pay reference
       const tx = new Transaction({ feePayer: payer, blockhash, lastValidBlockHeight }).add(ix)
 
-      setSt({ status: 'busy', msg: `approve in ${wallet.name}…` })
+      setSt({ status: 'busy', msg: `approve in ${wallet.name}...` })
       const signed = await provider.signTransaction(tx)
       const sig = await connection.sendRawTransaction(signed.serialize())
-      setSt({ status: 'busy', msg: 'confirming on devnet…' })
+      setSt({ status: 'busy', msg: 'confirming on devnet...' })
       await connection.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, 'confirmed')
 
       const v = await (await fetch(`${PROXY}/api/pay-verify?sig=${sig}&reference=${intent.reference}&amount=${intent.amountSol}&recipient=${intent.recipient}`)).json()
@@ -321,15 +321,15 @@ function PayButton({ fixture }) {
   }
 
   if (st.status === 'ok') return html`
-    <div class="settled ok"><span class="bind-tag">paid</span> you paid <b>${st.amountSol} SOL</b> with ${wallet?.name} —
-      <a href=${st.explorer} target="_blank" rel="noreferrer">tx ↗</a> · verified by its Solana Pay reference</div>`
+    <div class="settled ok"><span class="bind-tag">paid</span> you paid <b>${st.amountSol} SOL</b> with ${wallet?.name} -
+      <a href=${st.explorer} target="_blank" rel="noreferrer">tx open</a> - verified by its Solana Pay reference</div>`
 
   return html`
     <div class="pay-self">
       <button class="pay-btn" disabled=${st.status === 'busy'} onClick=${pay}>
         ${st.status === 'busy'
           ? html`<span class="spin"></span> ${st.msg}`
-          : `Pay it yourself with Phantom / Solflare · ${SETTLE_SOL} SOL`}
+          : `Pay it yourself with Phantom / Solflare - ${SETTLE_SOL} SOL`}
       </button>
       ${st.status === 'error' && html`<span class="pay-err">${st.msg}</span>`}
     </div>`
@@ -348,7 +348,7 @@ function App() {
 
   // load the board: fixtures with verified live odds (inlined). The free World Cup tier's odds are
   // intermittent and the proxy needs a few seconds to subscribe on a cold start, so we KEEP polling
-  // until live data arrives — showing the labelled sample board meanwhile, then switching to live on
+  // until live data arrives - showing the labelled sample board meanwhile, then switching to live on
   // its own. We never mix demo numbers into a live fixture.
   useEffect(() => {
     let alive = true
@@ -377,9 +377,9 @@ function App() {
     setOdds(Array.isArray(selected.odds) ? selected.odds : demoOddsFor(selected.FixtureId))
   }, [idx, fixtures])
 
-  // the agent delivers its call, then the buyer escrow fires automatically (Option A — no button).
-  // Live → the proxy's /api/edge (real odds → real call) → /api/settle (real devnet deposit→release);
-  // demo → a client-side call only (no wallet flow). Never invents data for an empty game.
+  // the agent delivers its call, then the buyer escrow fires automatically (Option A - no button).
+  // Live -> the proxy's /api/edge (real odds -> real call) -> /api/settle (real devnet deposit->release);
+  // demo -> a client-side call only (no wallet flow). Never invents data for an empty game.
   useEffect(() => {
     if (!selected) return
     let alive = true
@@ -395,7 +395,7 @@ function App() {
       }
       if (!alive) return
       setEdge(e)
-      // 2) delivery → settlement fires on its own; the Explorer links appear when it confirms
+      // 2) delivery -> settlement fires on its own; the Explorer links appear when it confirms
       if (source !== 'live') return
       setSettling(true)
       try {
@@ -415,7 +415,7 @@ function App() {
   return html`
     <header class="hero">
       <span class=${'kicker' + (source === 'demo' ? ' demo' : '')}>
-        <span class="dot"></span>${source === 'demo' ? 'sample fixtures · live odds quiet' : 'live · devnet · free World Cup tier'}
+        <span class="dot"></span>${source === 'demo' ? 'sample fixtures - live odds quiet' : 'live - devnet - free World Cup tier'}
       </span>
       <h1>World Cup Oracle</h1>
       <p class="tagline">An agent sells <b>verified</b> TxODDS odds: it fetches the de-margined fair line on Solana devnet,
@@ -423,7 +423,7 @@ function App() {
     </header>
     <main>
       <${Pipeline} edge=${edge} source=${source} settleRes=${settleRes} />
-      ${!fixtures && html`<p class="muted" style=${{ textAlign: 'center' }}>loading fixtures…</p>`}
+      ${!fixtures && html`<p class="muted" style=${{ textAlign: 'center' }}>loading fixtures...</p>`}
       ${selected && html`
         <section class="featured">
           <div class="feat-top">
@@ -440,7 +440,7 @@ function App() {
             <${EdgeCard} edge=${edge} />
             <div class="settle-row">
               ${settling && html`<div class="settling-auto">
-                <span class="spin"></span> agent delivered — arbiter settling ${SETTLE_SOL} SOL in escrow on devnet…
+                <span class="spin"></span> agent delivered - arbiter settling ${SETTLE_SOL} SOL in escrow on devnet...
               </div>`}
               ${settleRes && html`<${SettleResult} r=${settleRes} />`}
               ${selected && html`<${PayButton} fixture=${selected} />`}
@@ -448,18 +448,18 @@ function App() {
           </div>
         </section>`}
 
-      <h3 class="grid-title">All fixtures — tap a match</h3>
+      <h3 class="grid-title">All fixtures - tap a match</h3>
       <div class="grid">
         ${fixtures?.map((fx) => html`<${MatchCard} key=${fx.FixtureId} fx=${fx} on=${selected?.FixtureId === fx.FixtureId} onSelect=${select} />`)}
       </div>
     </main>
     <footer class="foot">
-      <p class="pillars">Verified <b>TxODDS</b> fair line · the agent's <b>break-even read</b> · settled by <b>Solana escrow</b>.</p>
+      <p class="pillars">Verified <b>TxODDS</b> fair line - the agent's <b>break-even read</b> - settled by <b>Solana escrow</b>.</p>
       <p>${source === 'live'
-        ? `live · devnet · ${fixtures.length} fixture${fixtures.length === 1 ? '' : 's'} with verified odds`
+        ? `live - devnet - ${fixtures.length} fixture${fixtures.length === 1 ? '' : 's'} with verified odds`
         : source === 'demo'
-          ? 'live World Cup odds are quiet right now — showing sample fixtures; the board switches to live automatically when they return'
-          : 'connecting to the live proxy…'}</p>
+          ? 'live World Cup odds are quiet right now - showing sample fixtures; the board switches to live automatically when they return'
+          : 'connecting to the live proxy...'}</p>
     </footer>`
 }
 

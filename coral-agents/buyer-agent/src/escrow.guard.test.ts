@@ -1,5 +1,5 @@
 /**
- * Devnet guard regression (F1) — escrow is the real settlement path, so makeProgram must refuse a
+ * Devnet guard regression (F1) - escrow is the real settlement path, so makeProgram must refuse a
  * mainnet RPC just like the legacy transfer path. The guard throws before any network call, so this
  * runs offline in CI.
  */

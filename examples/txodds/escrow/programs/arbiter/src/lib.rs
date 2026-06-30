@@ -1,18 +1,18 @@
-//! Arbiter — the trustless wrapper over the escrow (settlement spine).
+//! Arbiter - the trusted-neutral wrapper over the escrow (settlement spine).
 //!
 //! The base escrow is **buyer-released**: only the buyer signs `release`/`refund`, so a buyer could
 //! take delivery and refund. This program fixes that asymmetry **without touching the deployed escrow**,
 //! using the documented vault-as-buyer pattern (see `../../contract_extension.md`):
 //!
-//!   - `open`  — the payer funds a **vault PDA** (system-owned, derived from the order `reference`),
+//!   - `open`  - the payer funds a **vault PDA** (system-owned, derived from the order `reference`),
 //!               then CPIs `escrow.initialize` signing *as the vault*, so the vault is the escrow's buyer.
 //!   - the payer now has **no on-chain power** over the funds; only the configured **arbiter** does:
-//!   - `arbitrate_release` — the arbiter attests delivery → CPI `escrow.release` → the seller is paid.
-//!   - `arbitrate_refund`  — after the deadline, the arbiter refunds → funds swept back to the payer.
+//!   - `arbitrate_release` - the arbiter attests delivery -> CPI `escrow.release` -> the seller is paid.
+//!   - `arbitrate_refund`  - after the deadline, the arbiter refunds -> funds swept back to the payer.
 //!
 //! So the seller is protected (the buyer can't unilaterally refund), and the arbiter is the neutral
-//! gate. Trust moves from "the buyer's goodwill" to "a neutral arbiter agent" — still a trusted third
-//! party (a production system would stake/decentralize it), but trustless *between buyer and seller*.
+//! gate. Trust moves from "the buyer's goodwill" to "a neutral arbiter agent" - still a trusted third
+//! party. The demo removes unilateral buyer clawback, but it does not decentralize arbitration.
 
 use anchor_lang::prelude::*;
 use anchor_lang::system_program::{transfer, Transfer};
@@ -36,7 +36,7 @@ pub mod arbiter {
     }
 
     /// Open an arbitrated order: fund the vault PDA, then deposit into escrow with the vault as the
-    /// escrow's `buyer`. The payer cannot later release or refund — only the arbiter can.
+    /// escrow's `buyer`. The payer cannot later release or refund - only the arbiter can.
     pub fn open(ctx: Context<Open>, amount: u64, reference: Pubkey, deadline: i64) -> Result<()> {
         // 1) Move (deposit + escrow-account rent) from the payer into the vault PDA.
         let rent = Rent::get()?.minimum_balance(8 + EscrowState::INIT_SPACE);
@@ -74,7 +74,7 @@ pub mod arbiter {
         Ok(())
     }
 
-    /// The arbiter attests delivery → release to the seller. Only the configured arbiter may call.
+    /// The arbiter attests delivery -> release to the seller. Only the configured arbiter may call.
     pub fn arbitrate_release(ctx: Context<ArbitrateRelease>, reference: Pubkey) -> Result<()> {
         require_keys_eq!(ctx.accounts.arbiter.key(), ctx.accounts.config.arbiter, ArbiterError::NotArbiter);
         let bump = ctx.bumps.vault;
@@ -100,7 +100,7 @@ pub mod arbiter {
         let seeds: &[&[u8]] = &[b"vault", reference.as_ref(), &[bump]];
         let signer: &[&[&[u8]]] = &[seeds];
 
-        // 1) escrow.refund → all funds (deposit + escrow rent) back to the vault (the escrow's buyer).
+        // 1) escrow.refund -> all funds (deposit + escrow rent) back to the vault (the escrow's buyer).
         escrow_refund(CpiContext::new_with_signer(
             ctx.accounts.escrow_program.to_account_info(),
             EscrowRefund {
@@ -211,7 +211,7 @@ pub struct ArbitrateRefund<'info> {
     #[account(mut, seeds = [b"vault", reference.as_ref()], bump)]
     pub vault: UncheckedAccount<'info>,
 
-    /// CHECK: the original payer — receives the swept refund
+    /// CHECK: the original payer - receives the swept refund
     #[account(mut)]
     pub payer: UncheckedAccount<'info>,
 

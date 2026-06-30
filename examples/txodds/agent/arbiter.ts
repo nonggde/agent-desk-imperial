@@ -1,14 +1,14 @@
 /**
- * Arbiter client — the trustless wrapper over the escrow (see ../escrow/programs/arbiter).
+ * Arbiter client - the trusted-neutral wrapper over the escrow (see ../escrow/programs/arbiter).
  *
  * The 3-party settlement the demo runs:
- *   1. `open(payer, seller, reference, amount, deadline)` — the payer funds a vault PDA (derived from
+ *   1. `open(payer, seller, reference, amount, deadline)` - the payer funds a vault PDA (derived from
  *      the order `reference`) and CPIs escrow.initialize with the vault as the escrow's buyer. The payer
  *      now has NO on-chain power over the funds.
- *   2. `arbitrateRelease(arbiter, seller, reference)` — the neutral arbiter attests delivery → the
+ *   2. `arbitrateRelease(arbiter, seller, reference)` - the neutral arbiter attests delivery -> the
  *      escrow pays the seller. Only the configured arbiter can call this (so the buyer can't take
- *      delivery and refund — the seller is protected).
- *   3. `arbitrateRefund(arbiter, payer, reference)` — after the deadline, the arbiter refunds → funds
+ *      delivery and refund - the seller is protected).
+ *   3. `arbitrateRefund(arbiter, payer, reference)` - after the deadline, the arbiter refunds -> funds
  *      are swept back to the payer.
  *
  * The arbiter program id is fixed (deployed to devnet); its IDL is bundled (./arbiter_idl.json) so no
@@ -32,7 +32,7 @@ export const configPda = (): PublicKey =>
   PublicKey.findProgramAddressSync([Buffer.from('config')], ARBITER_PROGRAM_ID)[0]
 export const vaultPda = (reference: PublicKey): PublicKey =>
   PublicKey.findProgramAddressSync([Buffer.from('vault'), reference.toBuffer()], ARBITER_PROGRAM_ID)[0]
-/** The escrow PDA for an arbitrated order — seeded by the VAULT (its buyer), not the human payer. */
+/** The escrow PDA for an arbitrated order - seeded by the VAULT (its buyer), not the human payer. */
 export const arbitratedEscrowPda = (vault: PublicKey, reference: PublicKey): PublicKey =>
   PublicKey.findProgramAddressSync([Buffer.from('escrow'), vault.toBuffer(), reference.toBuffer()], ESCROW_PROGRAM_ID)[0]
 

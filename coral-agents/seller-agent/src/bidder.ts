@@ -1,5 +1,5 @@
 /**
- * LLM bidding — the seller's brain in the marketplace.
+ * LLM bidding - the seller's brain in the marketplace.
  *
  * On a WANT, the seller asks the LLM whether to bid and at what price, given its persona and cost
  * floor. The model PROPOSES; this code ENFORCES the economics, mirroring llm_buyer.ts:
@@ -37,13 +37,13 @@ type Llm = (opts: CompleteOpts) => Promise<string>
 
 /** Decide whether/how to bid. `llm` is injectable so tests run without the network. */
 export async function decideBid(want: Want, cfg: SellerConfig, llm: Llm = complete): Promise<BidDecision> {
-  // Hard guards first — no LLM call needed to refuse impossible jobs.
+  // Hard guards first - no LLM call needed to refuse impossible jobs.
   if (!cfg.services.includes(want.service)) return { bid: false, priceSol: 0, note: 'not in inventory' }
   if (cfg.floorSol > want.budgetSol) return { bid: false, priceSol: 0, note: 'budget below floor' }
 
   const system =
     `You are ${cfg.name}, ${cfg.persona}. You sell Solana data services. Decide whether to bid on a ` +
-    `request and at what price in SOL. Your cost floor is ${cfg.floorSol} SOL — never propose below it; ` +
+    `request and at what price in SOL. Your cost floor is ${cfg.floorSol} SOL - never propose below it; ` +
     `the buyer's budget caps the price. Reply ONLY with JSON: {"bid": boolean, "price": number, ` +
     `"note": string}. Keep note under 8 words.`
   const user = `service=${want.service} arg=${want.arg} budget=${want.budgetSol} floor=${cfg.floorSol}`
@@ -60,7 +60,7 @@ export async function decideBid(want: Want, cfg: SellerConfig, llm: Llm = comple
       note = (parsed.note ?? '').slice(0, 60)
     }
   } catch {
-    // LLM unavailable → deterministic fallback below (bid at floor).
+    // LLM unavailable -> deterministic fallback below (bid at floor).
   }
 
   // Enforce the economics: clamp the price into [floor, budget].

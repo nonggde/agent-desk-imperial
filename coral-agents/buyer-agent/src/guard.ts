@@ -2,7 +2,7 @@ import { LAMPORTS_PER_SOL } from '@solana/web3.js'
 
 /** Per-purchase, code-enforced trust state: which recipients/references are payable, and total spent. */
 export interface PurchaseGuard {
-  /** Recipients the buyer actually saw in a real 402 challenge — the only ones it may pay. */
+  /** Recipients the buyer actually saw in a real 402 challenge - the only ones it may pay. */
   allowedRecipients: Set<string>
   /** References the buyer saw in a real challenge. */
   allowedReferences: Set<string>
@@ -44,7 +44,7 @@ export function guardPayment(guard: PurchaseGuard, input: PaymentInput, budgetLa
 
 /**
  * F3: bind the awarded seller to the escrow payout pubkey. The buyer should only deposit if the
- * `seller=` carried in `ESCROW_REQUIRED` matches the wallet it expects for the winner — otherwise a
+ * `seller=` carried in `ESCROW_REQUIRED` matches the wallet it expects for the winner - otherwise a
  * thread participant could redirect the payout. With an empty `expected` (no seller wallet configured)
  * this is a no-op, which is the demo default since the personas share one receive wallet.
  */

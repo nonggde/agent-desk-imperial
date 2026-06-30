@@ -51,7 +51,7 @@ describe('selection', () => {
   const bids: Bid[] = [
     { round: 7, priceSol: 0.0006, by: 'premium' },
     { round: 7, priceSol: 0.0003, by: 'cheap' },
-    { round: 6, priceSol: 0.0001, by: 'cheap' }, // different round — excluded
+    { round: 6, priceSol: 0.0001, by: 'cheap' }, // different round - excluded
     { round: 7, priceSol: 0.0002, by: 'cheap' }, // cheap re-bids; last wins
   ]
   it('selectBids filters by round and dedupes by seller (last wins)', () => {

@@ -6,7 +6,7 @@ const cfg: SellerConfig = { name: 'seller-x', services: ['helius-risk'], floorSo
 const want: Want = { round: 1, service: 'helius-risk', arg: '7jw', budgetSol: 0.001 }
 const llmSays = (json: string) => async () => json
 
-describe('decideBid — code-enforced economics', () => {
+describe('decideBid - code-enforced economics', () => {
   it('refuses a service not in inventory (no LLM call)', async () => {
     const d = await decideBid({ ...want, service: 'jupiter' }, cfg, async () => { throw new Error('should not call') })
     expect(d.bid).toBe(false)

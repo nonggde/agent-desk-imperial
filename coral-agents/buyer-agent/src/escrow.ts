@@ -1,15 +1,15 @@
 /**
- * Escrow settlement — BUYER side (signs deposit / release / refund).
+ * Escrow settlement - BUYER side (signs deposit / release / refund).
  *
  * The buyer locks funds in a per-order escrow PDA, releases on delivery, or refunds after the
- * deadline. The `reference` is the same key the seller issues — it seeds the PDA. IDL is fetched
+ * deadline. The `reference` is the same key the seller issues - it seeds the PDA. IDL is fetched
  * from the deployed program.
  *
  * These calls settle against the escrow program deployed to devnet (see PROGRAM_ID); they need a
  * funded devnet wallet + live RPC, so they run in a live market session, not in `npm test`/CI.
  */
 // @coral-xyz/anchor is CommonJS. Under Node ESM, a NAMESPACE import (`import * as`) only exposes the
-// names cjs-module-lexer detects (BN is missed → "BN is not a constructor"). A DEFAULT import gives
+// names cjs-module-lexer detects (BN is missed -> "BN is not a constructor"). A DEFAULT import gives
 // the whole module.exports, so every member resolves. (esModuleInterop makes this typecheck.)
 import anchor from '@coral-xyz/anchor'
 import type { Program } from '@coral-xyz/anchor'
@@ -28,7 +28,7 @@ export function escrowPda(buyer: PublicKey, reference: PublicKey): PublicKey {
 
 /** Program handle signed by the buyer (deposits/releases/refunds). */
 export async function makeProgram(buyer: Keypair, rpcUrl: string): Promise<Program> {
-  // solanaConnection() applies the devnet guard (throws on a mainnet RPC unless ALLOW_MAINNET=1) —
+  // solanaConnection() applies the devnet guard (throws on a mainnet RPC unless ALLOW_MAINNET=1) -
   // escrow is the real settlement path, so it must be guarded just like the legacy transfer path.
   const provider = new AnchorProvider(
     solanaConnection(rpcUrl),
@@ -36,7 +36,7 @@ export async function makeProgram(buyer: Keypair, rpcUrl: string): Promise<Progr
     { commitment: 'confirmed' },
   )
   const idl = await anchor.Program.fetchIdl(PROGRAM_ID, provider)
-  if (!idl) throw new Error('escrow IDL not found on-chain — is the program deployed to this cluster?')
+  if (!idl) throw new Error('escrow IDL not found on-chain - is the program deployed to this cluster?')
   return new anchor.Program(idl, provider)
 }
 
@@ -58,7 +58,7 @@ export async function deposit(
     .rpc()
 }
 
-/** Confirm delivery → pay the seller and close the escrow. */
+/** Confirm delivery -> pay the seller and close the escrow. */
 export async function release(
   program: Program,
   buyer: Keypair,

@@ -20,8 +20,8 @@ import { solanaConnection } from '@pay/agent-runtime'
  */
 function loadKeypair(): Keypair {
   const b58 = process.env.BUYER_KEYPAIR_B58
-  if (!b58) throw new Error('BUYER_KEYPAIR_B58 not set — generate with: solana-keygen new --no-bip39-passphrase')
-  // Decode base58 via BigInt — avoids adding a bs58 package dependency.
+  if (!b58) throw new Error('BUYER_KEYPAIR_B58 not set - generate with: solana-keygen new --no-bip39-passphrase')
+  // Decode base58 via BigInt - avoids adding a bs58 package dependency.
   const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
   let n = BigInt(0)
   for (const c of b58) {
@@ -80,7 +80,7 @@ export async function payFromUrl(solanaPayUrl: string, maxSol: number): Promise<
 
   const tx = new Transaction().add(ix)
   const sig = await sendAndConfirmTransaction(conn, tx, [keypair], { commitment: 'confirmed' })
-  console.error(`[buyer-agent] paid ${amountSol} SOL → ${recipient.toBase58()} sig=${sig}`)
+  console.error(`[buyer-agent] paid ${amountSol} SOL -> ${recipient.toBase58()} sig=${sig}`)
   return sig
 }
 
@@ -111,6 +111,6 @@ export async function signTransfer(recipient: string, amountSol: number, referen
 
   const tx = new Transaction().add(ix)
   const sig = await sendAndConfirmTransaction(conn, tx, [keypair], { commitment: 'confirmed' })
-  console.error(`[buyer-agent] paid ${amountSol} SOL → ${recipient} ref=${reference ?? 'none'} sig=${sig}`)
+  console.error(`[buyer-agent] paid ${amountSol} SOL -> ${recipient} ref=${reference ?? 'none'} sig=${sig}`)
   return sig
 }

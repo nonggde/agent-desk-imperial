@@ -1,4 +1,4 @@
-/* World Cup Oracle — a captivating, stadium-themed board for live TxODDS devnet data. */
+/* World Cup Oracle - a captivating, stadium-themed board for live TxODDS devnet data. */
 @import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
@@ -32,7 +32,7 @@ body {
 .boot, .muted { color: var(--muted); }
 code { font-family: ui-monospace, Menlo, monospace; font-size: 13px; color: var(--gold); }
 
-/* ── hero ─────────────────────────────────────────────────────────────────── */
+/* hero */
 .hero {
   max-width: 1120px; margin: 0 auto; padding: 54px 24px 8px; text-align: center;
   animation: fadeUp .6s ease both;
@@ -58,7 +58,7 @@ code { font-family: ui-monospace, Menlo, monospace; font-size: 13px; color: var(
 
 main { max-width: 1120px; margin: 0 auto; padding: 22px 24px 64px; }
 
-/* ── featured match ───────────────────────────────────────────────────────── */
+/* featured match */
 .featured {
   background: var(--card); border: 1px solid var(--card-line); border-radius: 22px;
   padding: 26px; backdrop-filter: blur(10px); box-shadow: 0 24px 70px rgba(0,0,0,.45);
@@ -112,7 +112,7 @@ main { max-width: 1120px; margin: 0 auto; padding: 22px 24px 64px; }
 .edge .e-cta { margin-left: auto; font-family: ui-monospace, Menlo, monospace; font-size: 12px;
   color: var(--sol); border: 1px dashed rgba(20,241,149,.4); border-radius: 8px; padding: 6px 10px; white-space: nowrap; }
 
-/* ── match grid ───────────────────────────────────────────────────────────── */
+/* match grid */
 .grid-title { margin: 34px 4px 14px; font-size: 13px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
 .mcard { background: var(--card); border: 1px solid var(--card-line); border-radius: 16px; padding: 14px;
@@ -129,7 +129,7 @@ main { max-width: 1120px; margin: 0 auto; padding: 22px 24px 64px; }
 .mc-comp { margin-top: 10px; font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; }
 .mc-comp .c { color: var(--gold); font-weight: 600; }
 
-/* ── footer ───────────────────────────────────────────────────────────────── */
+/* footer */
 .foot { max-width: 1120px; margin: 8px auto 0; padding: 26px 24px 0; color: var(--muted); font-size: 12.5px;
   border-top: 1px solid var(--card-line); text-align: center; }
 .foot .pillars { color: var(--text); }
@@ -152,7 +152,7 @@ main { max-width: 1120px; margin: 0 auto; padding: 22px 24px 64px; }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
 @keyframes floaty { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 
-/* ── the thesis row: agent's call (LLM) + on-chain settle (SOL) ────────────── */
+/* thesis row: agent's call (LLM) + on-chain settle (SOL) */
 .thesis { margin-top: 20px; border-top: 1px solid var(--card-line); padding-top: 18px; display: grid; gap: 14px; animation: fadeUp .5s ease both; }
 .edgecard { background: linear-gradient(120deg, rgba(185,164,255,.12), transparent); border: 1px solid rgba(185,164,255,.3);
   border-left: 4px solid var(--draw); border-radius: 12px; padding: 14px 16px; }
@@ -174,7 +174,7 @@ main { max-width: 1120px; margin: 0 auto; padding: 22px 24px 64px; }
 .ec-honest { margin: 12px 0 0; font-size: 11.5px; line-height: 1.5; color: var(--muted); border-top: 1px solid var(--card-line); padding-top: 10px; }
 .ec-honest b { color: var(--text); }
 
-/* ── pipeline explainer ───────────────────────────────────────────────────── */
+/* pipeline explainer */
 .pipeline { max-width: 1120px; margin: 0 auto 26px; padding: 0 24px; }
 .pipe-title { font: 700 14px 'Inter', sans-serif; color: var(--text); margin-bottom: 12px; }
 .pipe-title span { color: var(--muted); font-weight: 400; }
@@ -217,6 +217,6 @@ main { max-width: 1120px; margin: 0 auto; padding: 22px 24px 64px; }
 .bind-tag { font-size: 9px; text-transform: uppercase; letter-spacing: .07em; color: #06210f;
   background: var(--sol); border-radius: 999px; padding: 1px 7px; font-weight: 700; }
 .bind-tag.arb { background: var(--gold); }
-.settled-line.trustless { margin-top: 6px; font-size: 12px; color: var(--muted); }
+.settled-line.arbiter-note { margin-top: 6px; font-size: 12px; color: var(--muted); }
 .bind-ref { flex-basis: 100%; font-family: ui-monospace, Menlo, monospace; font-size: 10.5px; color: var(--card-line); word-break: break-all; }
 .bind-ref { color: #6b7a72; }

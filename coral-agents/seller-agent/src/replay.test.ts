@@ -7,7 +7,7 @@ describe('ReplayGuard', () => {
     expect(g.has('sig-A')).toBe(false)
   })
 
-  it('flags a signature once consumed — blocking replay', () => {
+  it('flags a signature once consumed - blocking replay', () => {
     const g = new ReplayGuard()
     expect(g.has('sig-A')).toBe(false) // first use: allowed
     g.consume('sig-A')

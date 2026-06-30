@@ -1,5 +1,5 @@
 /**
- * Devnet guard regression (F1) — the seller's read-only makeProgram must also refuse a mainnet RPC.
+ * Devnet guard regression (F1) - the seller's read-only makeProgram must also refuse a mainnet RPC.
  * The guard throws before any network call, so this runs offline in CI.
  */
 import { describe, it, expect } from 'vitest'

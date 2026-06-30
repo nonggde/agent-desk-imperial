@@ -2,10 +2,10 @@
 
 > An agent that **sells verified World Cup data for devnet SOL**. It fetches verified TxODDS odds on
 > devnet, turns them into fair (break-even) odds + a one-line read, and the kit's arbiter-gated escrow
-> settles the delivery — automatically, on-chain. Free tier, devnet, no Docker.
+> settles the delivery - automatically, on-chain. Free tier, devnet, no Docker.
 
-This is the worked answer to the track brief — *build an agent that sells a real service and gets paid
-in SOL* — pointed at the hackathon's own dataset ([TxODDS' **TxLINE**](https://txline-docs.txodds.com)).
+This is the worked answer to the track brief - *build an agent that sells a real service and gets paid
+in SOL* - pointed at the hackathon's own dataset ([TxODDS' **TxLINE**](https://txline-docs.txodds.com)).
 
 ## What it is
 
@@ -25,7 +25,7 @@ examples/txodds/
 
 ## The product
 
-`analyzeEdge()` is the on-thesis transform: **verified de-margined odds in → fair (break-even) odds +
+`analyzeEdge()` is the on-thesis transform: **verified de-margined odds in -> fair (break-even) odds +
 a one-line read out**, paid for on delivery. The proxy exposes it at `/api/edge`; the same function is
 the body of the standalone `deliverService()` reference in `service.ts` if you fork the agent.
 
@@ -38,7 +38,7 @@ it can't claw back, and a neutral arbiter releases to the seller on verified del
 From the repo root (this is what `npm run dev` does):
 
 ```sh
-npm install --prefix scripts && node scripts/setup.js   # devnet wallets → .env (fund the buyer)
+npm install --prefix scripts && node scripts/setup.js   # devnet wallets -> .env (fund the buyer)
 # add ANTHROPIC_API_KEY to .env, then:
 npm run dev            # proxy (:8801) + Oracle UI (:3020), opens the browser
 ```
@@ -53,7 +53,7 @@ npm run web            # the Oracle UI on http://localhost:3020
 
 The proxy needs `BUYER_KEYPAIR_B58` in the repo `.env` (from `node scripts/setup.js`) funded with a
 little devnet SOL. It subscribes that wallet to the free World Cup tier on devnet, then serves **only
-fixtures with verified live odds**. The browser never sees the token or the key — everything sensitive
+fixtures with verified live odds**. The browser never sees the token or the key - everything sensitive
 stays in the proxy. Without funding/a key, the board shows clearly-labelled sample data.
 
 On the board you can also click **Pay with Phantom / Solflare** to buy the read yourself: a real
@@ -62,13 +62,13 @@ On the board you can also click **Pay with Phantom / Solflare** to buy the read 
 
 ## CoralOS round (the multi-agent view)
 
-The web demo above is one agent. For the **multi-agent** version — a buyer agent + a World Cup seller
-agent trading this same edge **over CoralOS (MCP)** and settling via the escrow on devnet — see
+The web demo above is one agent. For the **multi-agent** version - a buyer agent + a World Cup seller
+agent trading this same edge **over CoralOS (MCP)** and settling via the escrow on devnet - see
 [`coral/`](coral/README.md):
 
 ```sh
-docker compose up -d coral        # coral-server (the MCP coordinator) — from the repo root
-npm run coral                     # one buyer + one seller; watch a full WANT → … → RELEASED round
+docker compose up -d coral        # coral-server (the MCP coordinator) - from the repo root
+npm run coral                     # one buyer + one seller; watch a full WANT -> ... -> RELEASED round
 ```
 
 Needs Docker + `TXLINE_API_KEY` (`npm run mint`). Verified: a real `RELEASED` tx on devnet.
@@ -79,22 +79,22 @@ Needs Docker + `TXLINE_API_KEY` (`npm run mint`). Verified: a real `RELEASED` tx
 |---|---|
 | Devnet program | `6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J` |
 | Devnet API host | `https://txline-dev.txodds.com` |
-| Free tier | service **level 1** — World Cup & Int Friendlies, on-chain price **0** |
+| Free tier | service **level 1** - World Cup & Int Friendlies, on-chain price **0** |
 
-**Three corrections** vs. the published TxODDS examples — all already applied in `server/proxy.ts`:
+**Three corrections** vs. the published TxODDS examples - all already applied in `server/proxy.ts`:
 1. **Host:** use `txline-dev.txodds.com` (the repo's `oracle-dev.txodds.com` does not resolve).
 2. **Mint:** subscribe with the treasury's `4Zao8ocPhmMgq7PdsYWyxvqySMGx7xb9cMftPMkEokRG`, **not** the
    IDL's stale `TXLINE_MINT`. `subscribe_v2` is in the IDL but not deployed on devnet, so use the legacy
    `subscribe(1, 4)` with the real mint.
-3. **Odds path:** `/api/odds/snapshot/{fixtureId}` — a path segment, not a query param.
+3. **Odds path:** `/api/odds/snapshot/{fixtureId}` - a path segment, not a query param.
 
 ## The escrow contracts
 
-Two deployed devnet programs in [`escrow/`](escrow/README.md) — the only Rust in the kit, called (not
+Two deployed devnet programs in [`escrow/`](escrow/README.md) - the only Rust in the kit, called (not
 forked) by the TS clients:
-- **escrow** (`R5NWNg9…CeXet`) — the settlement spine (`agent/escrow.ts`, IDL fetched on-chain).
-- **arbiter** (`FJtuVXsy…ktXd`) — the trustless wrapper the demo settles through (`agent/arbiter.ts`,
-  bundled IDL): the buyer funds a vault it can't claw back; a neutral arbiter releases to the seller.
+- **escrow** (`R5NWNg9...CeXet`) - the settlement spine (`agent/escrow.ts`, IDL fetched on-chain).
+- **arbiter** (`FJtuVXsy...ktXd`) - the trusted-neutral wrapper the demo settles through (`agent/arbiter.ts`,
+  bundled IDL): the buyer funds a vault it can't claw back; a trusted neutral arbiter releases to the seller.
 
 The demo runs against the deployed programs with no local build; `escrow/README.md` covers
 building/redeploying your own.

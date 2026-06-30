@@ -3,7 +3,7 @@ import { encodeURL, validateTransfer } from '@solana/pay'
 import BigNumber from 'bignumber.js'
 import { solanaConnection } from '@pay/agent-runtime'
 
-/** Lazy connection factory — fresh `Connection` per call, guarded against a mainnet RPC. */
+/** Lazy connection factory - fresh `Connection` per call, guarded against a mainnet RPC. */
 const connection = () => solanaConnection()
 
 /** Return value from `generatePaymentUrl`. */
@@ -13,7 +13,7 @@ export interface PaymentUrl {
   /**
    * Unique single-use **reference** public key (base58) that binds this payment to this order.
    * The buyer writes it into the transfer as a read-only account; the seller verifies the payment
-   * carries it. This makes a payment proof non-transferable — a payment for one order can't satisfy
+   * carries it. This makes a payment proof non-transferable - a payment for one order can't satisfy
    * another, and a third party can't steal the signature.
    */
   reference: string
@@ -26,15 +26,15 @@ export interface PaymentUrl {
  * reference key.
  *
  * Requires:
- * - `SELLER_WALLET` — base58 public key of the seller's wallet.
- * - `PRICE_SOL`     — price in SOL (default `"0.0001"`).
+ * - `SELLER_WALLET` - base58 public key of the seller's wallet.
+ * - `PRICE_SOL`     - price in SOL (default `"0.0001"`).
  */
 export function generatePaymentUrl(request: string): PaymentUrl {
   const recipient = process.env.SELLER_WALLET
   if (!recipient) throw new Error('SELLER_WALLET not set')
 
   const amountSol = parseFloat(process.env.PRICE_SOL ?? '0.0001')
-  const reference = Keypair.generate().publicKey // unique per request — single-use binding
+  const reference = Keypair.generate().publicKey // unique per request - single-use binding
 
   const url = encodeURL({
     recipient: new PublicKey(recipient),

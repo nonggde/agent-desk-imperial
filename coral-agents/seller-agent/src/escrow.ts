@@ -1,5 +1,5 @@
 /**
- * Escrow settlement — SELLER side (read-only).
+ * Escrow settlement - SELLER side (read-only).
  *
  * The seller never signs on-chain; it only checks "is money locked for me?" before delivering
  * (release is the buyer's call). The IDL is fetched from the deployed program, so nothing needs
@@ -8,7 +8,7 @@
  * These reads hit the escrow program deployed to devnet (see PROGRAM_ID); they need live RPC, so they
  * run in a live market session, not in `npm test`/CI.
  */
-// @coral-xyz/anchor is CommonJS — a DEFAULT import exposes the whole module.exports (a namespace
+// @coral-xyz/anchor is CommonJS - a DEFAULT import exposes the whole module.exports (a namespace
 // import misses members the cjs lexer doesn't detect). esModuleInterop makes this typecheck.
 import anchor from '@coral-xyz/anchor'
 import type { Program } from '@coral-xyz/anchor'
@@ -26,7 +26,7 @@ export function escrowPda(buyer: PublicKey, reference: PublicKey): PublicKey {
   )[0]
 }
 
-/** Read-only Program handle (a throwaway wallet — the seller never signs). */
+/** Read-only Program handle (a throwaway wallet - the seller never signs). */
 export async function makeProgram(rpcUrl: string): Promise<Program> {
   // solanaConnection() applies the devnet guard (throws on a mainnet RPC unless ALLOW_MAINNET=1).
   const provider = new AnchorProvider(
@@ -35,11 +35,11 @@ export async function makeProgram(rpcUrl: string): Promise<Program> {
     { commitment: 'confirmed' },
   )
   const idl = await anchor.Program.fetchIdl(PROGRAM_ID, provider)
-  if (!idl) throw new Error('escrow IDL not found on-chain — is the program deployed to this cluster?')
+  if (!idl) throw new Error('escrow IDL not found on-chain - is the program deployed to this cluster?')
   return new anchor.Program(idl, provider)
 }
 
-/** Is a funded escrow present for (buyer, reference) naming `seller`, holding ≥ `minAmountSol`? */
+/** Is a funded escrow present for (buyer, reference) naming `seller`, holding >= `minAmountSol`? */
 export async function isFunded(
   program: Program,
   buyer: PublicKey,

@@ -1,26 +1,41 @@
 /**
- * buyer.ts — self-contained LLM buyer for the bare-metal 402 seller (Track 1, Layer B).
+ * buyer.ts - autonomous buyer for the bare-metal Agent Desk 402 seller.
  *
- * Claude drives the loop: fetch → see 402 → decide to pay → sign transfer → retry. This is the
- * standalone, runnable version of `LLMBuyerStrategy` (coral-agents/buyer-agent/src/llm_buyer.ts),
- * inlined here so the example runs without cross-package wiring.
- *
- * Run:  SELLER endpoint must be up (npm run server), then `npm run buyer`.
- * Env:  ANTHROPIC_API_KEY, BUYER_KEYPAIR_B58, SOLANA_RPC_URL, ENDPOINT (default localhost:3001)
+ * The buyer fetches the paid skill endpoint, reads the 402 challenge, checks the
+ * requested SOL amount against its budget, signs a devnet transfer with the unique
+ * Solana Pay reference, then retries with the proof to receive the paid delivery.
  */
-import Anthropic from '@anthropic-ai/sdk'
 import {
   Connection, Keypair, PublicKey, SystemProgram, Transaction,
   LAMPORTS_PER_SOL, sendAndConfirmTransaction,
 } from '@solana/web3.js'
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const ENDPOINT = process.env.ENDPOINT ?? 'http://localhost:3001/api/data'
+function loadDotEnv() {
+  const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
+  try {
+    for (const line of readFileSync(join(root, '.env'), 'utf8').split('\n')) {
+      const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/)
+      if (m && process.env[m[1]] === undefined) process.env[m[1]] = m[2].replace(/^["']|["']$/g, '')
+    }
+  } catch {
+    // Shell env is enough.
+  }
+}
+
+loadDotEnv()
+
+const DEFAULT_TASK = 'create a launch-ready product brief for an AI agent skill marketplace'
+const ENDPOINT =
+  process.env.ENDPOINT ??
+  `http://localhost:3001/api/data?q=${encodeURIComponent(process.env.BUYER_GOAL ?? DEFAULT_TASK)}`
 const BUDGET_LAMPORTS = Number(process.env.BUYER_MAX_SOL ?? 0.001) * LAMPORTS_PER_SOL
-const GOAL = process.env.BUYER_GOAL ?? 'Fetch the SOL→USDC swap quote from the data endpoint.'
 const RPC = process.env.SOLANA_RPC_URL ?? 'https://api.devnet.solana.com'
-// Devnet-only guard (standalone — mirrors @pay/agent-runtime's solanaConnection).
+
 if (process.env.ALLOW_MAINNET !== '1' && /mainnet/i.test(RPC)) {
-  throw new Error(`Refusing mainnet RPC "${RPC}" — this kit is devnet-only. Set ALLOW_MAINNET=1 to override (never with a funded key).`)
+  throw new Error(`Refusing mainnet RPC "${RPC}". Set ALLOW_MAINNET=1 only for deliberate testing.`)
 }
 
 interface Challenge { recipient: string; amountSol: number; reference?: string }
@@ -28,10 +43,10 @@ interface Challenge { recipient: string; amountSol: number; reference?: string }
 function loadKeypair(): Keypair {
   const b58 = process.env.BUYER_KEYPAIR_B58
   if (!b58) throw new Error('BUYER_KEYPAIR_B58 not set')
-  const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
+  const alphabet = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
   let n = 0n
   for (const c of b58) {
-    const idx = ALPHABET.indexOf(c)
+    const idx = alphabet.indexOf(c)
     if (idx < 0) throw new Error('invalid base58')
     n = n * 58n + BigInt(idx)
   }
@@ -41,83 +56,55 @@ function loadKeypair(): Keypair {
   return Keypair.fromSecretKey(bytes)
 }
 
-let lastReference: string | undefined
+async function fetchChallenge(): Promise<Challenge | string> {
+  const r = await fetch(ENDPOINT)
+  if (r.status !== 402) return await r.text()
+  const header = r.headers.get('x-payment-required')
+  if (header) return JSON.parse(header) as Challenge
+  return JSON.parse(await r.text()) as Challenge
+}
 
-async function payAndRetry(challenge: Challenge): Promise<string> {
-  if (challenge.amountSol * LAMPORTS_PER_SOL > BUDGET_LAMPORTS) {
-    return `budget exceeded: ${challenge.amountSol} SOL`
+async function pay(challenge: Challenge): Promise<string> {
+  const lamports = Math.round(challenge.amountSol * LAMPORTS_PER_SOL)
+  if (lamports > BUDGET_LAMPORTS) {
+    throw new Error(`budget exceeded: ${challenge.amountSol} SOL requested`)
   }
+  if (!challenge.reference) throw new Error('seller challenge missing Solana Pay reference')
+
   const keypair = loadKeypair()
   const conn = new Connection(RPC, 'confirmed')
   const ix = SystemProgram.transfer({
     fromPubkey: keypair.publicKey,
     toPubkey: new PublicKey(challenge.recipient),
-    lamports: Math.round(challenge.amountSol * LAMPORTS_PER_SOL),
+    lamports,
   })
-  if (challenge.reference) {
-    ix.keys.push({ pubkey: new PublicKey(challenge.reference), isSigner: false, isWritable: false })
-  }
+  ix.keys.push({ pubkey: new PublicKey(challenge.reference), isSigner: false, isWritable: false })
+
   const sig = await sendAndConfirmTransaction(conn, new Transaction().add(ix), [keypair], { commitment: 'confirmed' })
-  lastReference = challenge.reference
   console.error(`[buyer] paid ${challenge.amountSol} SOL sig=${sig}`)
-  const retry = await fetch(ENDPOINT, {
-    headers: { 'x-payment-proof': sig, ...(challenge.reference ? { 'x-payment-reference': challenge.reference } : {}) },
-  })
-  return (await retry.text()).slice(0, 2000)
+  return sig
 }
 
 async function main() {
-  const llm = new Anthropic()
-  const tools: Anthropic.Tool[] = [
-    { name: 'fetch_data', description: 'Fetch the endpoint; returns data or a 402 challenge.',
-      input_schema: { type: 'object', properties: {}, required: [] } },
-    { name: 'pay_and_retry', description: 'Pay a challenge then re-fetch with proof.',
-      input_schema: { type: 'object', properties: {
-        recipient: { type: 'string' }, amountSol: { type: 'number' }, reference: { type: 'string' },
-      }, required: ['recipient', 'amountSol'] } },
-  ]
-  const messages: Anthropic.MessageParam[] = [{ role: 'user', content: GOAL }]
-
-  for (let turn = 0; turn < 8; turn++) {
-    const resp = await llm.messages.create({
-      model: process.env.BUYER_MODEL ?? 'claude-haiku-4-5-20251001',
-      max_tokens: 1024,
-      system: `You are an autonomous data buyer on Solana devnet. fetch_data, and if it returns a
-402 challenge, call pay_and_retry with the EXACT recipient/amount/reference from the challenge.
-Never invent values. When you have the data, summarize it in one sentence and stop.`,
-      tools, messages,
-    })
-    messages.push({ role: 'assistant', content: resp.content })
-
-    const toolUses = resp.content.filter((c): c is Anthropic.ToolUseBlock => c.type === 'tool_use')
-    if (toolUses.length === 0) {
-      const answer = resp.content.filter((c): c is Anthropic.TextBlock => c.type === 'text').map(c => c.text).join('\n')
-      console.error(`[buyer] DONE: ${answer}`)
-      return
-    }
-
-    const results: Anthropic.ToolResultBlockParam[] = []
-    for (const tu of toolUses) {
-      if (tu.name === 'fetch_data') {
-        const r = await fetch(ENDPOINT)
-        if (r.status === 402) {
-          const challenge = JSON.parse(r.headers.get('x-payment-required') ?? (await r.text())) as Challenge
-          console.error(`[buyer] 402 challenge: ${challenge.amountSol} SOL → ${challenge.recipient}`)
-          results.push({ type: 'tool_result', tool_use_id: tu.id, content: JSON.stringify({ status: 402, challenge }) })
-        } else {
-          results.push({ type: 'tool_result', tool_use_id: tu.id, content: (await r.text()).slice(0, 2000) })
-        }
-      } else if (tu.name === 'pay_and_retry') {
-        const out = await payAndRetry(tu.input as Challenge)
-        results.push({ type: 'tool_result', tool_use_id: tu.id, content: out })
-      } else {
-        results.push({ type: 'tool_result', tool_use_id: tu.id, is_error: true, content: `unknown tool ${tu.name}` })
-      }
-    }
-    messages.push({ role: 'user', content: results })
+  const first = await fetchChallenge()
+  if (typeof first === 'string') {
+    console.error(`[buyer] endpoint returned data without payment: ${first.slice(0, 500)}`)
+    return
   }
-  console.error('[buyer] loop exhausted without a final answer')
-  process.exitCode = 1
+
+  console.error(`[buyer] 402 challenge: ${first.amountSol} SOL -> ${first.recipient}`)
+  if (process.env.DRY_RUN === '1') {
+    console.error(`[buyer] DRY_RUN=1, not signing. reference=${first.reference}`)
+    return
+  }
+
+  const sig = await pay(first)
+  const retry = await fetch(ENDPOINT, {
+    headers: { 'x-payment-proof': sig, 'x-payment-reference': first.reference ?? '' },
+  })
+  const text = await retry.text()
+  if (!retry.ok) throw new Error(`seller rejected proof: ${retry.status} ${text.slice(0, 500)}`)
+  console.error(`[buyer] DONE: ${text.slice(0, 2000)}`)
 }
 
 main().catch((e) => { console.error(`[buyer] error: ${e}`); process.exitCode = 1 })

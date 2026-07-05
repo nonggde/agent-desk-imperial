@@ -258,3 +258,17 @@ npx skills add https://github.com/solana-foundation/solana-dev-skill --global --
 ## License
 
 MIT
+# Agent Desk - paid AI-work skills on Solana
+
+Imperial AI Agent Hackathon fork of the Solana x CoralOS starter kit.
+
+Agent Desk sells an `agent-desk-brief` skill: a buyer asks for work, receives a Solana Pay 402
+challenge, pays on devnet, and receives a structured AI-work packet with acceptance criteria,
+verification evidence, and a sha256 delivery receipt.
+
+- Submission summary: [`SUBMISSION.md`](SUBMISSION.md)
+- 5-slide pitch: [`docs/imperial-pitch.md`](docs/imperial-pitch.md)
+- Demo script: [`docs/demo-video-script.md`](docs/demo-video-script.md)
+- No-Docker paid skill demo: [`examples/agent-economy/quickstart`](examples/agent-economy/quickstart/README.md)
+
+The original starter kit documentation continues below.

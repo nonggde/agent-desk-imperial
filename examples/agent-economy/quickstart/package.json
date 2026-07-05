@@ -1,6 +1,7 @@
 {
-  "name": "agent-economy-quickstart",
+  "name": "agent-desk-quickstart",
   "version": "0.1.0",
+  "description": "Bare-metal Agent Desk 402 skill marketplace demo on Solana devnet",
   "type": "module",
   "scripts": {
     "server": "tsx server.ts",

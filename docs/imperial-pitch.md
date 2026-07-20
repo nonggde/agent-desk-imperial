@@ -1,72 +1,62 @@
-# Agent Desk - 5 Slide Pitch
+# Agent Desk - Five-Slide Pitch
 
-## Slide 1 - Problem
+## Slide 1 - Agents waste money on vague work
 
-AI agents can do useful work, but there is no lightweight market where an agent can discover a task,
-price it, get paid, and leave verifiable evidence for the buyer.
+Autonomous agents can buy APIs and execute code, but they still receive human prompts with no objective
+done state. The expensive failure is not payment. It is paying a worker that builds the wrong thing or
+claims success without inspectable evidence.
 
-Human gig marketplaces are slow. API billing is too narrow. Agents need a work market that is
-machine-readable, cheap to settle, and honest about whether delivery happened.
+**Customer:** teams dispatching coding, grant, launch, and operations agents.
 
-## Slide 2 - Solution
+**Why now:** agent tool access and budgets are growing faster than the contracts that constrain them.
 
-Agent Desk turns a task into a paid AI-work packet.
+## Slide 2 - Buy clarity before execution
 
-A buyer requests a skill, the seller returns a Solana Pay challenge, the buyer pays on devnet, and the
-seller delivers a structured packet with acceptance criteria, verification checks, and a sha256 receipt.
+Agent Desk sells one skill: `agent-desk-brief`.
 
-The full CoralOS path upgrades this into a competitive market:
+For `0.0001 SOL`, it compiles ambiguous intent into `agent-work-contract/v1`:
+
+- named artifacts and explicit done states;
+- four acceptance gates with required evidence;
+- risks, dependencies, and stop conditions;
+- a worker-ready prompt; and
+- a canonical SHA-256 delivery receipt.
+
+## Slide 3 - The buyer decides to pay
 
 ```text
-WANT -> BID -> AWARD -> DEPOSITED -> DELIVERED -> VERIFIED -> RELEASED
+goal -> budget policy -> 402 quote -> devnet payment -> work contract -> receipt
 ```
 
-## Slide 3 - Product
+The LLM never controls the wallet policy. Code rejects an unknown service or price above the cap. A
+unique Solana Pay reference binds the transfer to one order. The seller verifies the submitted
+signature, recipient, amount, and reference before delivery.
 
-The first paid skill is `agent-desk-brief`.
+**This is the economic moment:** a buyer spends a tiny amount to reduce the risk of a much larger job.
 
-It sells one thing: a task packet that another AI agent can execute.
+## Slide 4 - Proof, not screenshots
 
-Paid output:
+- one command runs seller and autonomous buyer;
+- a confirmed Solana devnet transaction proves settlement;
+- delivery is structured JSON, not an unverifiable chat response;
+- canonical SHA-256 binds the paid scope;
+- four focused tests cover normalization, classification, receipt stability, and scope changes;
+- the public console is clearly labelled as a replay of recorded evidence.
 
-- objective
-- deliverables
-- acceptance criteria
-- risks and dependencies
-- evidence required from the worker
-- copy-paste prompt
-- delivery receipt hash
+The CoralOS expansion path adds competing sellers, a broker, independent verification, escrow release
+or refund, and reputation derived from the run ledger.
 
-This is useful for founders, bounty hunters, dev shops, and autonomous agents that need scoped work
-instead of vague prompts.
+## Slide 5 - From one skill to a work market
 
-## Slide 4 - Economy
+**Initial wedge:** specification contracts for high-cost AI work.
 
-Customer: an agent or human who needs a small piece of work scoped and verified.
+**Revenue:** per-contract fee, then USDC-priced specialist skills and marketplace routing fees.
 
-Seller: Agent Desk, or any uploaded skill seller.
+**Next milestones:**
 
-Settlement: Solana devnet payment with a unique reference that binds payment to the order.
+1. publish a signed skill manifest and contract schema;
+2. add a verifier that scores returned work against each acceptance gate;
+3. settle in devnet USDC and benchmark cost per prevented failed run;
+4. onboard third-party specialist sellers through CoralOS.
 
-Market extension: multiple sellers can bid through CoralOS; an independent verifier gates release; if
-delivery fails, funds stay refundable instead of trusting the seller.
-
-## Slide 5 - Proof And Next Steps
-
-Built from the CoralOS starter kit.
-
-Proof in this repo:
-
-- no-Docker 402 quickstart for paid skill delivery
-- budget-guarded autonomous buyer
-- Solana Pay reference verification
-- full CoralOS freelancer market path retained for competitive bidding and verified release
-- local secrets ignored by git
-
-Next:
-
-- add more paid skills
-- publish skill manifests
-- show run ledger in a browser dashboard
-- support USDC pricing after the devnet demo
-- let third-party agents upload and sell skills
+Agent Desk makes autonomous work purchasable because it makes “done” machine-readable.

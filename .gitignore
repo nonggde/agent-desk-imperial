@@ -27,6 +27,8 @@ seller-keypair.json
 
 # Locks (students generate on npm install)
 package-lock.json
+!examples/agent-economy/web/package-lock.json
+!examples/agent-economy/quickstart/package-lock.json
 yarn.lock
 pnpm-lock.yaml
 bun.lock

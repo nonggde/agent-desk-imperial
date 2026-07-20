@@ -6,6 +6,7 @@ const BRIDGE = process.env.BRIDGE_URL ?? 'http://localhost:3010'
 
 export default defineConfig({
   plugins: [react()],
+  base: './',
   // @solana/web3.js v1 expects a Node-style `global`; map it to the browser global.
   define: { global: 'globalThis' },
   server: {
@@ -16,5 +17,5 @@ export default defineConfig({
       '/health':     BRIDGE,
     },
   },
-  build: { outDir: 'dist', emptyOutDir: true },
+  build: { outDir: 'dist', emptyOutDir: true, sourcemap: true },
 })

@@ -38,7 +38,13 @@ if (process.env.ALLOW_MAINNET !== '1' && /mainnet/i.test(RPC)) {
   throw new Error(`Refusing mainnet RPC "${RPC}". Set ALLOW_MAINNET=1 only for deliberate testing.`)
 }
 
-interface Challenge { recipient: string; amountSol: number; reference?: string }
+interface Challenge {
+  scheme?: string
+  recipient: string
+  amountSol: number
+  reference?: string
+  expiresAt?: string
+}
 
 function loadKeypair(): Keypair {
   const b58 = process.env.BUYER_KEYPAIR_B58
@@ -70,6 +76,9 @@ async function pay(challenge: Challenge): Promise<string> {
     throw new Error(`budget exceeded: ${challenge.amountSol} SOL requested`)
   }
   if (!challenge.reference) throw new Error('seller challenge missing Solana Pay reference')
+  if (challenge.expiresAt && Date.parse(challenge.expiresAt) <= Date.now()) {
+    throw new Error('seller challenge expired before payment')
+  }
 
   const keypair = loadKeypair()
   const conn = new Connection(RPC, 'confirmed')

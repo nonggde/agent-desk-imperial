@@ -3,15 +3,16 @@
 Bare-metal 402 demo for an AI-agent skill marketplace on Solana devnet.
 
 This fork sells an `agent-desk-brief` skill: a buyer sends a task, the seller returns a Solana Pay
-402 challenge, the autonomous buyer pays with a devnet wallet, the seller verifies the reference-tagged
-transfer on-chain, and the buyer receives a structured work packet plus a delivery hash.
+402 challenge, the autonomous buyer pays with a devnet wallet, the seller verifies the exact
+reference-tagged transfer on-chain, and the buyer receives `agent-work-contract/v1` plus a canonical
+delivery hash.
 
 ```text
 buyer.ts -> GET /api/data?q=<task> -> server.ts
          <- 402 + { recipient, amountSol, reference }
 buyer signs a devnet transfer with the reference key
 buyer.ts -> GET /api/data + x-payment-proof
-         <- 200 { service, brief, skillPrompt, receipt }
+         <- 200 { order, execution, workerPrompt, receipt }
 ```
 
 ## Why this matters
@@ -41,7 +42,13 @@ set SOLANA_RPC_URL=https://solana-devnet.api.onfinality.io/public
 ```
 
 Fund the generated buyer wallet with devnet SOL. The public buyer address is printed in `WALLETS.txt`.
-Then run:
+Then run the full seller + buyer lifecycle from the repository root:
+
+```sh
+npm run demo:agent-desk
+```
+
+For separate terminals, run:
 
 ```sh
 cd examples/agent-economy/quickstart
@@ -64,9 +71,17 @@ DRY_RUN=1 npm run buyer
 
 ## Fork points
 
-- `server.ts` -> `deliverData()` is the paid skill.
-- `verify.ts` confirms recipient, amount, and Solana Pay reference.
+- `skill.ts` compiles the paid work contract and canonical receipt.
+- `server.ts` exposes the paid endpoint and one-use quote state.
+- `verify.ts` confirms the submitted signature, recipient, amount, and Solana Pay reference.
 - `buyer.ts` is the autonomous buyer loop with budget guard.
+
+## Verify
+
+```sh
+npm run typecheck
+npm test
+```
 
 ## Current Agent Desk skill
 
@@ -78,9 +93,9 @@ create a launch-ready product brief for an AI agent skill marketplace
 
 Paid output:
 
-- execution objective
-- named deliverables
-- acceptance criteria
-- verification evidence requirements
-- copy-paste skill prompt
-- sha256 receipt for the delivered packet
+- normalized objective and task type
+- named deliverables with explicit done states
+- four acceptance gates with evidence requirements
+- risks and stop conditions
+- worker-ready prompt
+- canonical SHA-256 receipt for the paid scope

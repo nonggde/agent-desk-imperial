@@ -1,59 +1,56 @@
 # Agent Desk Demo Video Script
 
-Target length: 3 minutes.
+Target: 2:30-3:00. Every screen must show product or evidence.
 
-## 0:00 - 0:25 Problem
+## 0:00-0:25 - Problem
 
-Agents can write, code, research, and verify work, but they still lack a simple economic loop. They
-need to ask for work, decide whether the price is acceptable, pay, receive delivery, and prove what
-happened.
+Open the proof console on the work-request stage.
 
-## 0:25 - 0:55 Solution
+“Agents can buy tools and execute code, but most jobs still arrive as vague prompts. The expensive
+failure is paying a worker that builds the wrong thing or claims completion without proof.”
 
-Agent Desk is a paid AI-work skill marketplace on Solana devnet. The first skill is
-`agent-desk-brief`, which turns a vague task into an executable work packet with acceptance criteria,
-verification evidence, and a receipt hash.
+## 0:25-0:50 - Product
 
-## 0:55 - 1:45 Live Demo
+Advance to delivery and show the JSON evidence inspector.
 
-Start the seller:
+“Agent Desk sells clarity before execution. For 0.0001 SOL, it compiles intent into a work contract:
+deliverables, done states, acceptance gates, evidence rules, stop conditions, and a SHA-256 receipt.”
 
-```sh
-cd examples/agent-economy/quickstart
-set SOLANA_RPC_URL=https://solana-devnet.api.onfinality.io/public
-npm run server
-```
+## 0:50-1:45 - Live terminal
 
-Start the buyer:
+Run:
 
 ```sh
-cd examples/agent-economy/quickstart
-set SOLANA_RPC_URL=https://solana-devnet.api.onfinality.io/public
-npm run buyer
+npm run demo:agent-desk
 ```
 
-Narration:
+Call out each visible transition:
 
-- The buyer asks for a task packet.
-- The seller returns a 402 challenge with recipient, amount, and a unique Solana Pay reference.
-- The buyer checks its budget, signs a devnet transfer, and retries with the payment proof.
-- The seller verifies the reference-tagged transfer on-chain.
-- The buyer receives the paid `agent-desk-brief` delivery.
+1. seller is healthy;
+2. buyer receives a 402 quote;
+3. budget policy accepts the price;
+4. buyer signs a reference-bound devnet transfer;
+5. seller validates the exact signature, recipient, amount, and reference;
+6. buyer receives `agent-work-contract/v1` and its digest.
 
-## 1:45 - 2:25 Market Path
+Open the printed signature in Solana Explorer. Show confirmed status and the buyer/seller identities.
 
-Show `examples/freelancer`: the full CoralOS market path supports competing sellers and verifier-gated
-release.
+## 1:45-2:20 - Trust boundary
 
-```text
-WANT -> BID -> AWARD -> DEPOSITED -> DELIVERED -> VERIFIED -> RELEASED
-```
+Open the architecture tab.
 
-This is where Agent Desk becomes more than one seller. It becomes a marketplace of uploaded skills.
+“The model proposes work. Code controls spend and release. Mainnet is rejected by default, unknown
+signatures do not unlock delivery, and every completion gate names the evidence a verifier expects.”
 
-## 2:25 - 3:00 Why Solana
+## 2:20-2:45 - Economy
 
-The payment is cheap, fast, and reference-bound. A buyer agent can pay at machine speed, and the order
-can be verified from chain evidence instead of screenshots or trust.
+Show the CoralOS expansion in the repository.
 
-Close with the repo, the pitch deck, and the next step: more skills, a skill registry, and USDC pricing.
+“Today this is one paid skill. CoralOS turns it into a market: sellers bid, a broker routes work, an
+independent verifier gates escrow release, and failed delivery remains refundable and auditable.”
+
+## 2:45-3:00 - Team and close
+
+Show the repository and test results.
+
+“I am the solo builder. Agent Desk makes autonomous work purchasable by making ‘done’ machine-readable.”

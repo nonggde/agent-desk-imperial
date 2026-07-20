@@ -14,6 +14,7 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { verifyPayment } from './verify.js'
+import { compileWorkContract } from './skill.js'
 
 function loadDotEnv() {
   const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
@@ -46,36 +47,61 @@ if (!RECIPIENT) {
 }
 
 const conn = new Connection(RPC, 'confirmed')
-const pending = new Map<string, string>()
+const QUOTE_TTL_MS = 10 * 60 * 1000
+const MAX_PENDING_QUOTES = 100
+const pending = new Map<string, { request: string; expiresAt: number }>()
 
 const app = express()
+
+app.get('/health', (_req, res) => {
+  res.json({ service: 'agent-desk', status: 'ready', network: 'solana-devnet' })
+})
 
 app.get('/api/data', async (req, res) => {
   const proof = req.header('x-payment-proof')
 
   if (!proof) {
+    pruneExpiredQuotes()
+    if (pending.size >= MAX_PENDING_QUOTES) {
+      res.status(503).json({ error: 'quote capacity reached; retry after existing quotes expire' })
+      return
+    }
     const reference = Keypair.generate().publicKey.toBase58()
-    pending.set(reference, req.query.q?.toString() ?? 'default')
+    const expiresAt = Date.now() + QUOTE_TTL_MS
+    pending.set(reference, { request: req.query.q?.toString() ?? 'default', expiresAt })
+    const challenge = {
+      scheme: 'solana-pay-reference/v1',
+      recipient: RECIPIENT,
+      amountSol: PRICE_SOL,
+      reference,
+      expiresAt: new Date(expiresAt).toISOString(),
+    }
     res
       .status(402)
-      .set('x-payment-required', JSON.stringify({ recipient: RECIPIENT, amountSol: PRICE_SOL, reference }))
-      .json({ error: 'payment required', recipient: RECIPIENT, amountSol: PRICE_SOL, reference })
+      .set('x-payment-required', JSON.stringify(challenge))
+      .json({ error: 'payment required', ...challenge })
     return
   }
 
   const reference = req.header('x-payment-reference') ?? req.query.reference?.toString()
-  if (!reference || !pending.has(reference)) {
+  const quote = reference ? pending.get(reference) : undefined
+  if (!reference || !quote) {
     res.status(400).json({ error: 'missing or unknown payment reference' })
     return
   }
+  if (quote.expiresAt < Date.now()) {
+    pending.delete(reference)
+    res.status(410).json({ error: 'payment quote expired; request a new quote' })
+    return
+  }
 
-  const sig = await verifyPayment(conn, new PublicKey(reference), new PublicKey(RECIPIENT), PRICE_SOL)
+  const sig = await verifyPayment(conn, new PublicKey(reference), new PublicKey(RECIPIENT), PRICE_SOL, proof)
   if (!sig) {
     res.status(402).json({ error: 'payment not confirmed on-chain' })
     return
   }
 
-  const request = pending.get(reference)!
+  const request = quote.request
   pending.delete(reference)
 
   let data: unknown
@@ -87,85 +113,18 @@ app.get('/api/data', async (req, res) => {
   res.json({ data, paidWith: sig })
 })
 
+function pruneExpiredQuotes() {
+  const now = Date.now()
+  for (const [reference, quote] of pending) {
+    if (quote.expiresAt < now) pending.delete(reference)
+  }
+}
+
 app.listen(PORT, () => {
   console.error(`[seller] Agent Desk 402 server on :${PORT} - recipient ${RECIPIENT}, price ${PRICE_SOL} SOL`)
 })
 
 // FORK POINT: this is the paid skill.
 async function deliverData(request: string): Promise<unknown> {
-  const task = normalizeTask(request)
-  const acceptance = acceptanceFor(task)
-  const digest = await sha256(`${task}|${acceptance.join('|')}|agent-desk-v1`)
-
-  return {
-    service: 'agent-desk-brief',
-    version: '1.0.0',
-    paidDelivery: true,
-    request: { task },
-    brief: {
-      title: titleFor(task),
-      objective: `Turn "${task}" into a finished agent-executable work packet.`,
-      buyerNeed: 'A copy-pasteable task that another AI agent can execute, verify, and return with evidence.',
-      deliverables: [
-        'one-page execution brief',
-        'acceptance criteria checklist',
-        'risk and dependency notes',
-        'verification commands or manual checks',
-      ],
-      acceptanceCriteria: acceptance,
-      verification: {
-        mode: 'self-check plus buyer review',
-        evidenceRequired: ['artifact link or text', 'summary of actions taken', 'pass/fail checklist'],
-      },
-      budget: { priceSol: PRICE_SOL, network: 'solana-devnet' },
-    },
-    skillPrompt: [
-      'You are Agent Desk, a paid AI work agent.',
-      `Task: ${task}`,
-      'Return: objective, steps, deliverables, acceptance criteria, risks, and evidence.',
-      'Do not claim completion without attaching verifiable output.',
-    ].join('\n'),
-    receipt: {
-      deliverySha256: digest,
-      issuedAt: new Date().toISOString(),
-      seller: RECIPIENT,
-    },
-  }
-}
-
-function normalizeTask(request: string): string {
-  const cleaned = request.trim().replace(/\s+/g, ' ')
-  return cleaned && cleaned !== 'default'
-    ? cleaned.slice(0, 240)
-    : 'create a launch-ready product brief for an AI agent skill marketplace'
-}
-
-function titleFor(task: string): string {
-  const first = task.split(/[.!?]/)[0]?.trim() || task
-  return first.length > 72 ? `${first.slice(0, 69)}...` : first
-}
-
-function acceptanceFor(task: string): string[] {
-  const lower = task.toLowerCase()
-  const base = [
-    'scope is specific enough for an independent AI agent to start without extra context',
-    'deliverables are named and have a clear done state',
-    'buyer can verify the result from attached evidence',
-  ]
-  if (/launch|tweet|x |marketing|post|thread/.test(lower)) {
-    return [...base, 'copy includes a hook, target audience, proof point, and call to action']
-  }
-  if (/code|repo|github|api|software|bug|test/.test(lower)) {
-    return [...base, 'implementation includes changed files, test commands, and known limitations']
-  }
-  if (/grant|bounty|pitch|investor|partner/.test(lower)) {
-    return [...base, 'pitch explains problem, solution, traction evidence, and requested next step']
-  }
-  return base
-}
-
-async function sha256(input: string): Promise<string> {
-  const bytes = new TextEncoder().encode(input)
-  const hash = await crypto.subtle.digest('SHA-256', bytes)
-  return [...new Uint8Array(hash)].map((b) => b.toString(16).padStart(2, '0')).join('')
+  return compileWorkContract(request, { seller: RECIPIENT, priceSol: PRICE_SOL })
 }

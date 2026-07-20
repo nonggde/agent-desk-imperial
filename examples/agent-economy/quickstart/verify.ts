@@ -21,9 +21,11 @@ export async function verifyPayment(
   reference: PublicKey,
   recipient: PublicKey,
   amountSol: number,
+  expectedSignature?: string,
 ): Promise<string | null> {
   try {
     const found = await findReference(conn, reference, { finality: 'confirmed' })
+    if (expectedSignature && found.signature !== expectedSignature) return null
     await validateTransfer(
       conn,
       found.signature,

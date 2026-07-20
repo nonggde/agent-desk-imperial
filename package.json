@@ -18,6 +18,7 @@
     "agent-economy:bridge": "node scripts/run-example.js examples/agent-economy/bridge start",
     "agent-economy:quickstart": "node scripts/run-example.js examples/agent-economy/quickstart server",
     "agent-economy:quickstart:buyer": "node scripts/run-example.js examples/agent-economy/quickstart buyer",
+    "demo:agent-desk": "node scripts/run-example.js examples/agent-economy/quickstart demo",
     "agent-economy:web": "node scripts/run-example.js examples/agent-economy/web dev"
   }
 }

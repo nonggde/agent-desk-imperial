@@ -2,7 +2,7 @@
 
 > A paid task-spec compiler for autonomous agents, settled and receipted on Solana.
 
-[Proof console](https://nonggde.github.io/agent-desk-imperial/) ·
+[Proof console](https://agent-desk-imperial.a13553776411.workers.dev) ·
 [Devnet settlement](https://explorer.solana.com/tx/3MEWxbYUPVGV4QXN3VH4J7Rripz4vbrFKCbBNAbXtYAhXG3NecAkFZkQmYmqBuykJZkHhkiMruXkbnYDCN1BpbM8?cluster=devnet) ·
 [Submission notes](SUBMISSION.md) ·
 [Five-slide pitch](docs/imperial-pitch.md)

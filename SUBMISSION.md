@@ -17,7 +17,7 @@ only after the exact transaction signature, recipient, amount, and order referen
 
 ## Judge Path
 
-- Product: https://nonggde.github.io/agent-desk-imperial/
+- Product: https://agent-desk-imperial.a13553776411.workers.dev
 - Repository: https://github.com/nonggde/agent-desk-imperial
 - Devnet proof: https://explorer.solana.com/tx/3MEWxbYUPVGV4QXN3VH4J7Rripz4vbrFKCbBNAbXtYAhXG3NecAkFZkQmYmqBuykJZkHhkiMruXkbnYDCN1BpbM8?cluster=devnet
 - One-command demo: `npm run demo:agent-desk`

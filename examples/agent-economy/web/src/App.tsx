@@ -18,7 +18,7 @@ import {
 
 const REPOSITORY = 'https://github.com/nonggde/agent-desk-imperial'
 const EXPLORER =
-  'https://explorer.solana.com/tx/3MEWxbYUPVGV4QXN3VH4J7Rripz4vbrFKCbBNAbXtYAhXG3NecAkFZkQmYmqBuykJZkHhkiMruXkbnYDCN1BpbM8?cluster=devnet'
+  'https://explorer.solana.com/tx/zX3pSjwTqCNxjXuxEiPCbUohU9uB5awZvALNUXXKUbh2RVsjVznnjMFBwvDD5tA3fJBW2bKAiHFCevDvUQUiuTT?cluster=devnet'
 const COMMAND = 'npm run demo:agent-desk'
 
 type View = 'proof' | 'architecture' | 'quickstart'
@@ -38,7 +38,7 @@ const PROOF_STEPS: ProofStep[] = [
     title: 'Work requested',
     actor: 'Buyer agent',
     summary: 'Compile an ambiguous product goal into an executable work contract.',
-    detail: 'WANT / agent-desk-brief / budget 0.0001 SOL',
+    detail: 'WANT / agent-desk-brief / budget 0.001 SOL',
     Icon: FileCheck2,
   },
   {
@@ -78,7 +78,7 @@ const PROOF_STEPS: ProofStep[] = [
 const RECEIPT = {
   service: 'agent-desk-brief',
   network: 'solana-devnet',
-  amountSol: 0.0001,
+  amountSol: 0.001,
   result: 'VERIFIED',
   delivery: {
     format: 'agent-work-contract/v1',
@@ -86,10 +86,13 @@ const RECEIPT = {
     evidenceRequired: true,
   },
   settlement: {
+    signature: 'zX3pSjwTqCNxjXuxEiPCbUohU9uB5awZvALNUXXKUbh2RVsjVznnjMFBwvDD5tA3fJBW2bKAiHFCevDvUQUiuTT',
+    reference: '3KuGeiGiPqbDTMMWjY1G94nnUALgY6GVGAPNVny4xmSV',
     referenceBound: true,
     recipientMatched: true,
     explorerProof: true,
   },
+  receiptSha256: 'e84e6af6d1675de8b19d441801afda370f6110c129e7cb8c9fef3da59c6054fa',
 }
 
 function App() {

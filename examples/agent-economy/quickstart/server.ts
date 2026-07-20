@@ -32,7 +32,7 @@ loadDotEnv()
 
 const PORT = Number(process.env.PORT ?? 3001)
 const RECIPIENT = process.env.SELLER_WALLET ?? process.env.WALLET ?? ''
-const PRICE_SOL = Number(process.env.PRICE_SOL ?? 0.0001)
+const PRICE_SOL = Number(process.env.PRICE_SOL ?? 0.001)
 const RPC = process.env.SOLANA_RPC_URL ?? 'https://api.devnet.solana.com'
 
 // Devnet-only guard. This demo should not spend real funds.

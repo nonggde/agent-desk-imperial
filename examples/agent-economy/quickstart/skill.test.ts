@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { classifyTask, compileWorkContract, normalizeTask } from './skill.js'
 
-const context = { seller: 'seller111', priceSol: 0.0001, issuedAt: '2026-07-20T00:00:00.000Z' }
+const context = { seller: 'seller111', priceSol: 0.001, issuedAt: '2026-07-20T00:00:00.000Z' }
 
 test('normalizes untrusted task text and enforces a length cap', () => {
   assert.equal(normalizeTask('  build   an API  '), 'build an API')

@@ -1,0 +1,35 @@
+{
+  "schema": "agent-desk-proof/v1",
+  "capturedAt": "2026-07-20T10:44:31.000Z",
+  "network": "solana-devnet",
+  "result": "confirmed-and-delivered",
+  "service": {
+    "id": "agent-desk-brief",
+    "deliverySchema": "agent-work-contract/v1",
+    "version": "1.1.0",
+    "amountSol": 0.001,
+    "acceptanceGates": 4,
+    "canonicalDeliverySha256": "e84e6af6d1675de8b19d441801afda370f6110c129e7cb8c9fef3da59c6054fa"
+  },
+  "transaction": {
+    "signature": "zX3pSjwTqCNxjXuxEiPCbUohU9uB5awZvALNUXXKUbh2RVsjVznnjMFBwvDD5tA3fJBW2bKAiHFCevDvUQUiuTT",
+    "explorer": "https://explorer.solana.com/tx/zX3pSjwTqCNxjXuxEiPCbUohU9uB5awZvALNUXXKUbh2RVsjVznnjMFBwvDD5tA3fJBW2bKAiHFCevDvUQUiuTT?cluster=devnet",
+    "slot": 477598254,
+    "blockTime": 1784544271,
+    "error": null,
+    "feeLamports": 5000,
+    "buyer": "Beke55tQ4QsmYMPkqMtWjuUUtaKLL9XtWNKgtKCH3Am5",
+    "seller": "rYENW2wNX5Cgo9FojyyuGUbmaNpyfvSEfnhS263n5BS",
+    "reference": "3KuGeiGiPqbDTMMWjY1G94nnUALgY6GVGAPNVny4xmSV",
+    "buyerPreBalanceLamports": 1000000000,
+    "buyerPostBalanceLamports": 998995000,
+    "sellerPreBalanceLamports": 0,
+    "sellerPostBalanceLamports": 1000000
+  },
+  "verification": {
+    "submittedSignatureMatchedReference": true,
+    "recipientMatched": true,
+    "amountMatched": true,
+    "deliveryReleasedAfterConfirmation": true
+  }
+}

@@ -3,7 +3,8 @@
 > A paid task-spec compiler for autonomous agents, settled and receipted on Solana.
 
 [Proof console](https://agent-desk-imperial.a13553776411.workers.dev) ·
-[Devnet settlement](https://explorer.solana.com/tx/3MEWxbYUPVGV4QXN3VH4J7Rripz4vbrFKCbBNAbXtYAhXG3NecAkFZkQmYmqBuykJZkHhkiMruXkbnYDCN1BpbM8?cluster=devnet) ·
+[Devnet settlement](https://explorer.solana.com/tx/zX3pSjwTqCNxjXuxEiPCbUohU9uB5awZvALNUXXKUbh2RVsjVznnjMFBwvDD5tA3fJBW2bKAiHFCevDvUQUiuTT?cluster=devnet) ·
+[Evidence JSON](docs/evidence/agent-desk-devnet-run.json) ·
 [Submission notes](SUBMISSION.md) ·
 [Five-slide pitch](docs/imperial-pitch.md)
 
@@ -25,7 +26,7 @@ validates the exact signature, recipient, amount, and reference before releasing
 
 Autonomous workers fail expensively when the request is vague: they produce the wrong artifact, claim
 completion without proof, or discover a blocked credential after spending model and tool budget. Agent
-Desk turns that ambiguity into an acceptance contract for `0.0001 SOL` before downstream execution.
+Desk turns that ambiguity into an acceptance contract for `0.001 SOL` before downstream execution.
 
 The customer can be another agent, an orchestration service, or a human dispatching AI work. The first
 market is teams running coding, grant, launch, and operations agents that need a common definition of

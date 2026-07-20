@@ -2,7 +2,7 @@
 
 ## Agent Desk
 
-Agent Desk is a paid task-spec compiler for autonomous agents. A buyer pays `0.0001 SOL` on devnet to
+Agent Desk is a paid task-spec compiler for autonomous agents. A buyer pays `0.001 SOL` on devnet to
 turn ambiguous intent into a receipted `agent-work-contract/v1`: scoped deliverables, measurable
 acceptance gates, evidence requirements, stop conditions, and a worker prompt.
 
@@ -19,7 +19,8 @@ only after the exact transaction signature, recipient, amount, and order referen
 
 - Product: https://agent-desk-imperial.a13553776411.workers.dev
 - Repository: https://github.com/nonggde/agent-desk-imperial
-- Devnet proof: https://explorer.solana.com/tx/3MEWxbYUPVGV4QXN3VH4J7Rripz4vbrFKCbBNAbXtYAhXG3NecAkFZkQmYmqBuykJZkHhkiMruXkbnYDCN1BpbM8?cluster=devnet
+- Devnet proof: https://explorer.solana.com/tx/zX3pSjwTqCNxjXuxEiPCbUohU9uB5awZvALNUXXKUbh2RVsjVznnjMFBwvDD5tA3fJBW2bKAiHFCevDvUQUiuTT?cluster=devnet
+- Evidence JSON: [`docs/evidence/agent-desk-devnet-run.json`](docs/evidence/agent-desk-devnet-run.json)
 - One-command demo: `npm run demo:agent-desk`
 - Tests: `cd examples/agent-economy/quickstart && npm ci && npm test`
 - Pitch: [`docs/imperial-pitch.md`](docs/imperial-pitch.md)

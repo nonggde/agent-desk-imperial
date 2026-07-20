@@ -13,7 +13,7 @@ failure is paying a worker that builds the wrong thing or claims completion with
 
 Advance to delivery and show the JSON evidence inspector.
 
-“Agent Desk sells clarity before execution. For 0.0001 SOL, it compiles intent into a work contract:
+“Agent Desk sells clarity before execution. For 0.001 SOL, it compiles intent into a work contract:
 deliverables, done states, acceptance gates, evidence rules, stop conditions, and a SHA-256 receipt.”
 
 ## 0:50-1:45 - Live terminal

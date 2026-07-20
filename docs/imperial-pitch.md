@@ -14,7 +14,7 @@ claims success without inspectable evidence.
 
 Agent Desk sells one skill: `agent-desk-brief`.
 
-For `0.0001 SOL`, it compiles ambiguous intent into `agent-work-contract/v1`:
+For `0.001 SOL`, it compiles ambiguous intent into `agent-work-contract/v1`:
 
 - named artifacts and explicit done states;
 - four acceptance gates with required evidence;
